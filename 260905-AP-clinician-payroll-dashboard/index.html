@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinician Payroll Dashboard — Prototype V4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="payroll-v4-shared.css">
+  <style>
+    /* V4: clinician search sits with the date range and the 5 / 10 switch; Settings is set once, so it goes far right (as on the table page) */
+    .search { margin-left: 0; }
+    .filters .field--btn:last-child { margin-left: auto; }
+
+    /* ── 5 / 10 switch ── */
+    .seg { display: inline-flex; border: 1px solid var(--blu); border-radius: 4px; overflow: hidden; height: 34px; }
+    .seg button {
+      border: none; background: #fff; color: var(--blu); cursor: pointer;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 14px; font-weight: 600; width: 44px;
+    }
+    .seg button + button { border-left: 1px solid var(--blu); }
+    .seg button:hover { background: var(--blue-ligh-11); }
+    .seg button[aria-pressed="true"] { background: var(--blu); color: #fff; }
+    .seg--off { opacity: .45; pointer-events: none; }
+
+    /* ── Selected-clinician banner ── */
+    .focus-banner {
+      margin: 0 30px 14px;
+      background: var(--blue-ligh-11);
+      border: 1px solid var(--blue-ligh-08);
+      border-radius: 4px;
+      padding: 10px 16px;
+      display: none; align-items: center; gap: 14px;
+      font-size: 13px; color: var(--text-blue-dark);
+    }
+    .focus-banner.show { display: flex; }
+    .focus-banner__name { font-family: 'Roboto Condensed', sans-serif; font-size: 18px; font-weight: 700; }
+    .focus-banner__meta { color: var(--gra-text-2); }
+    .focus-banner .btn { margin-left: auto; }
+
+    .search__list {
+      position: absolute; top: 60px; left: 0; right: 0; z-index: 20;
+      background: #fff; border: 1px solid var(--gra-01); border-radius: 4px;
+      box-shadow: 0 4px 14px rgba(1,67,120,.15);
+      max-height: 280px; overflow-y: auto; display: none;
+    }
+    .search__list.open { display: block; }
+    .search__opt { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+    .search__opt small { color: var(--gra-text-1); font-size: 11px; white-space: nowrap; }
+    .search__opt:hover, .search__opt.hl { background: var(--blue-ligh-11); }
+    .search__none { padding: 10px 12px; font-size: 12px; color: var(--gra-text-1); }
+
+    /* ── Metric groups (V3): one section per group, stacked. Four columns per row leaves room to grow;
+          subgrid lines up head / number / list / footer across the cards of a group ── */
+    .group { margin: 0 30px 22px; }
+    .group__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--gra-01); }
+    .group__title { font-family: 'Roboto Condensed', sans-serif; font-size: 23px; font-weight: 700; color: var(--blu); }
+    .group__count { font-size: 12px; color: var(--gra-text-1); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-rows: auto auto 1fr auto;
+      gap: 0 14px;
+    }
+    @media (max-width: 1300px) { .group { margin-left: 24px; margin-right: 24px; } .grid { gap: 0 10px; } .filters, .focus-banner { margin-left: 24px; margin-right: 24px; } .page-header { padding-left: 24px; padding-right: 24px; } }
+    .card {
+      grid-row: span 4;
+      display: grid; grid-template-rows: subgrid;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 4px rgba(0,0,0,.18);
+      min-width: 0;
+    }
+    .card__head { padding: 12px 14px 0; }
+    .card__title { font-family: 'Roboto Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
+    .card__sub { font-size: 11px; color: var(--gra-text-2); margin-top: 3px; line-height: 1.35; }
+    .card__thr { font-size: 11px; color: var(--gra-text-1); margin-top: 3px; line-height: 1.35; }
+    .card__thr b { font-weight: 500; color: var(--gra-text-2); }
+
+    .kpi { padding: 10px 14px 10px; border-bottom: 1px solid var(--gra-02); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .kpi__num { font-family: 'Roboto Condensed', sans-serif; font-size: 34px; font-weight: 700; line-height: 1; color: var(--text-dark); }
+    .kpi__num--alert { color: var(--red-text); }
+    .kpi__num--zero { color: var(--gra-text-1); }
+    .kpi__num--md { font-size: 28px; }
+    .kpi__label { font-size: 12px; color: var(--gra-text-2); }
+
+    .card__body { padding: 4px 10px 6px; min-width: 0; }
+    .card__foot {
+      border-top: 1px solid var(--gra-02);
+      padding: 7px 10px 7px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+      font-size: 11px; color: var(--gra-text-2);
+    }
+    .card__foot b { color: var(--text-dark); }
+    .card__foot .link-btn { margin-left: auto; }
+    .avg-key { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .avg-key i { width: 0; height: 12px; border-left: 2px dashed var(--text-dark); display: inline-block; }
+
+    /* Ranked rows (narrow columns) */
+    .rows { list-style: none; }
+    .row {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 5px;
+      padding: 5px 2px;
+      border-radius: 3px;
+      align-items: center;
+    }
+    .row + .row { border-top: 1px solid var(--gra-02); }
+    .row:hover { background: var(--blue-ligh-14); }
+    .row__rank { font-family: 'Roboto Condensed', sans-serif; font-size: 12px; font-weight: 600; color: var(--gra-text-1); text-align: right; }
+    .row__top { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+    .row__bot { display: flex; align-items: center; gap: 7px; margin-top: 4px; min-height: 13px; }
+    .row__val { margin-left: auto; font-family: 'Roboto Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-dark); white-space: nowrap; }
+    .row__detail { font-size: 10px; color: var(--gra-text-1); white-space: nowrap; }
+
+    .track { position: relative; flex: 1; height: 5px; background: var(--gra-02); border-radius: 3px; }
+    .bar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bar); border-radius: 3px; }
+    .mark { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed var(--text-dark); }
+
+    .empty { padding: 22px 6px; text-align: center; font-size: 12px; color: var(--gra-text-1); line-height: 1.5; }
+
+    /* ── Clinician view ── */
+    .solo { padding: 8px 4px 6px; }
+    .solo__rank { font-size: 11px; line-height: 1.6; color: var(--gra-text-2); }
+    .solo__rank b { color: var(--text-dark); }
+    .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+    .pill--on { background: var(--red-soft); color: var(--red-text); }
+    .pill--off { background: var(--gra-02); color: var(--gra-text-2); }
+    .pill--new { background: #e6f9ee; color: #12804a; }
+
+    .cmp { margin-top: 10px; display: grid; grid-template-columns: 1fr 50px; gap: 2px 8px; align-items: center; font-size: 11px; }
+    .cmp__label { grid-column: 1 / -1; margin-top: 4px; color: var(--gra-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cmp__val { text-align: right; font-family: 'Roboto Condensed', sans-serif; font-weight: 700; font-size: 14px; color: var(--text-dark); white-space: nowrap; }
+    .cmp .track { height: 12px; }
+    .bar--avg { background: var(--bar-soft); }
+    .bar--you { background: var(--bar-strong); }
+
+    .trend { margin-top: 14px; }
+    .trend__head { font-size: 11px; color: var(--gra-text-2); margin-bottom: 4px; }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--bar-strong); }
+    .legend i.dash { border-top: 2px dashed var(--gra-text-1); }
+    .trend svg { width: 100%; height: auto; display: block; overflow: visible; }
+    .trend__axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--gra-text-1); margin-top: 2px; }
+
+    .sec-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .sec-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--gra-text-1); text-transform: uppercase; letter-spacing: .4px; padding: 6px 3px; border-bottom: 1px solid var(--gra-01); }
+    .sec-table td { padding: 6px 3px; border-bottom: 1px solid var(--gra-02); }
+    .sec-table td.num, .sec-table th.num { text-align: right; }
+    .sec-table td.num { font-family: 'Roboto Condensed', sans-serif; font-weight: 700; font-size: 14px; color: var(--text-dark); }
+    .sec-table tr.total td { border-bottom: none; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Clinician payroll dashboard</h1>
+        <p class="page-desc">Clinicians whose activity may need a closer look this period.</p>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <section class="filters">
+      <div class="field">
+        <label class="field-label" for="preset">Date range</label>
+        <div class="range-controls">
+          <select class="select" id="preset">
+          </select>
+          <input type="date" class="input input--date" id="from" aria-label="From">
+          <span class="range-sep">to</span>
+          <input type="date" class="input input--date" id="to" aria-label="To">
+        </div>
+        <div class="range-note" id="rangeNote"></div>
+      </div>
+      <div class="field">
+        <span class="field-label" id="segLabel">Clinicians per card</span>
+        <div class="seg" id="seg" role="group" aria-labelledby="segLabel">
+          <button type="button" data-n="5">5</button><button type="button" data-n="10">10</button>
+        </div>
+      </div>
+      <div class="field search" id="search">
+        <label class="field-label" for="q">Clinician</label>
+        <svg class="search__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+        <input class="input" id="q" placeholder="Search by clinician name" autocomplete="off">
+        <button class="search__clear" id="qClear" aria-label="Clear clinician">&times;</button>
+        <div class="search__list" id="qList"></div>
+      </div>
+      <div class="field field--btn">
+        <button class="btn" id="tOpen" type="button"></button>
+      </div>
+    </section>
+
+    <div class="focus-banner" id="focusBanner">
+      <span>Showing</span>
+      <span class="focus-banner__name" id="focusName"></span>
+      <span class="focus-banner__meta" id="focusMeta"></span>
+      <button class="btn btn--sm" id="focusClear">Back to all clinicians</button>
+    </div>
+
+    <div id="groups"></div>
+  </main>
+
+<script src="payroll-v4-shared.js"></script>
+<script>
+mountChrome('<a href="#">Dashboard</a>&nbsp;&gt;&nbsp;Clinician Payroll Dashboard');
+
+const TABLE_PAGE = 'table.html';
+const state = readState();
+let T = loadThresholds(), TE = T, focus = null, D = null;
+
+$('groups').innerHTML = GROUPS.map(g => `
+  <section class="group" aria-labelledby="g_${g.id}">
+    <div class="group__head"><h2 class="group__title" id="g_${g.id}">${g.title}</h2><span class="group__count">${plural(g.keys.length, 'metric')}</span></div>
+    <div class="grid">${g.keys.map(k => `<section class="card" id="${k}"></section>`).join('')}</div>
+  </section>`).join('');
+
+/* ════════════════ Card definitions ════════════════ */
+const CARDS = {
+  m1: {
+    sub: () => 'First encounter ever, in this period',
+    list: D => D.rows.filter(r => r.isNew).sort((x, y) => x.c.firstDay - y.c.firstDay),
+    val: r => fmt(r.c.firstDay),
+    title: r => WD[dt(r.c.firstDay).getUTCDay()] + ', ' + fmt(r.c.firstDay, true),
+    empty: 'No new clinicians had their first encounter in this period.'
+  },
+  m2: {
+    sub: D => `Encounters vs. ${fmtRange(D.pa, D.pb)}`,
+    list: D => D.rows.filter(r => r.drop !== null && r.drop < 0).sort((x, y) => x.drop - y.drop),
+    avgText: D => `Company avg: <b>${pct(D.avg.m2)}</b>`,
+    scale: () => 100,
+    barWidth: r => Math.abs(r.drop),
+    mark: () => null,
+    val: r => pct(r.drop),
+    detail: r => `${r.prev} → ${r.cur}`,
+    empty: 'No clinician had fewer encounters than in the previous period.'
+  },
+  m3: {
+    sub: () => 'Average time from visit to sync',
+    list: D => D.rows.filter(r => r.sync !== null).sort((x, y) => y.sync - x.sync),
+    avgText: D => `<span class="avg-key"><i></i>Company avg: <b>${hm(D.avg.m3)}</b></span>`,
+    scale: (D, rows) => Math.max(rows[0] ? rows[0].sync : 0, D.avg.m3) * 1.05,
+    barWidth: r => r.sync,
+    mark: D => D.avg.m3,
+    val: r => hm(r.sync),
+    detail: r => plural(r.visits, 'visit'),
+    empty: 'No visits in this period.'
+  },
+  m4: {
+    sub: () => 'Encounters in the period',
+    list: D => D.rows.slice().sort((x, y) => x.enc - y.enc || x.c.name.localeCompare(y.c.name)),
+    avgText: D => `<span class="avg-key"><i></i>Company avg: <b>${D.avg.m4.toFixed(1)}</b></span>`,
+    scale: D => D.avg.m4 * 1.25,
+    barWidth: r => r.enc,
+    mark: D => D.avg.m4,
+    val: r => r.enc,
+    tags: r => r.isNew ? '<span class="tag tag--new">New</span>' : '',
+    empty: 'No active clinicians in this period.'
+  },
+  m5: {
+    sub: () => 'Encounters in all secondary states combined',
+    list: D => D.rows.filter(r => r.sec !== null).sort((x, y) => x.sec - y.sec || x.c.name.localeCompare(y.c.name)),
+    avgText: D => `<span class="avg-key"><i></i>Company avg: <b>${D.avg.m5.toFixed(1)}</b></span>`,
+    scale: D => D.avg.m5 * 1.4,
+    barWidth: r => r.sec,
+    mark: D => D.avg.m5,
+    val: r => r.sec,
+    detail: r => r.c.secondary.join(', '),
+    empty: 'No clinicians with a secondary state were active in this period.'
+  }
+};
+
+const tableLink = (key, label) => `<a class="link-btn" href="${TABLE_PAGE}${stateQuery(state, T, { sort: key })}">${label || 'View all'}</a>`;
+
+function headHtml(key, D, sub) {
+  const thr = key === 'm1' ? '' : `<div class="card__thr">Limit: <b>${thrText(key, T, TE)}</b></div>`;
+  return `<div class="card__head"><div class="card__title">${METRICS[key].title}</div><div class="card__sub">${sub}</div>${thr}</div>`;
+}
+
+function rowHtml(key, def, D, r, rank, scale) {
+  const over = key !== 'm1' && isOver(key, r, TE);
+  const val = `<span class="row__val" ${def.title ? `title="${def.title(r)}"` : ''}>${flagged(def.val(r), over)}</span>`;
+  if (!def.barWidth) return `<li class="row"><span class="row__rank">${rank}</span><div class="row__top" style="min-width:0">${nameLink(r.c)}${val}</div></li>`;
+  const w = Math.min(100, def.barWidth(r) / scale * 100);
+  const m = def.mark(D);
+  const markHtml = m !== null ? `<div class="mark" style="left:${Math.min(100, m / scale * 100)}%"></div>` : '';
+  return `<li class="row">
+    <span class="row__rank">${rank}</span>
+    <div style="min-width:0">
+      <div class="row__top">${nameLink(r.c)}${def.tags ? def.tags(r) : ''}${val}</div>
+      <div class="row__bot"><div class="track"><div class="bar" style="width:${w}%"></div>${markHtml}</div>${def.detail ? `<span class="row__detail">${def.detail(r)}</span>` : ''}</div>
+    </div>
+  </li>`;
+}
+
+function renderCard(key, D) {
+  const def = CARDS[key], rows = def.list(D);
+  const scale = def.scale ? def.scale(D, rows) || 1 : 1;
+  const top = rows.slice(0, state.n);
+  let kpi;
+  if (key === 'm1') {
+    kpi = `<span class="kpi__num ${rows.length ? '' : 'kpi__num--zero'}">${rows.length}</span><span class="kpi__label">new this period</span>`;
+  } else {
+    const n = rows.filter(r => isOver(key, r, TE)).length;
+    kpi = `<span class="kpi__num ${n ? 'kpi__num--alert' : 'kpi__num--zero'}">${n}</span><span class="kpi__label">${n === 1 ? 'clinician' : 'clinicians'} over the limit</span>`;
+  }
+  $(key).innerHTML = `
+    ${headHtml(key, D, def.sub(D))}
+    <div class="kpi">${kpi}</div>
+    <div class="card__body">${top.length ? `<ul class="rows">${top.map((r, i) => rowHtml(key, def, D, r, i + 1, scale)).join('')}</ul>` : `<div class="empty">${def.empty}</div>`}</div>
+    <div class="card__foot">${def.avgText ? `<span>${def.avgText(D)}</span>` : ''}${tableLink(key)}</div>`;
+}
+
+/* ════════════════ Clinician view ════════════════ */
+function weeksEndingAt(b, n) {
+  const lastSat = b - ((b % 7) + 1) % 7;
+  const out = [];
+  for (let k = n - 1; k >= 0; k--) { const e = lastSat - 7 * k; out.push([e - 6, e]); }
+  return out.filter(w => w[0] >= 0);
+}
+
+function trendSvg(series, avgSeries, fmtV, weeks) {
+  const W = 300, H = 90, P = 5;
+  const vals = series.concat(avgSeries).filter(v => v !== null);
+  const max = Math.max(1, ...vals) * 1.1;
+  const x = i => P + i * (W - 2 * P) / Math.max(1, weeks.length - 1);
+  const y = v => H - 4 - v / max * (H - 12);
+  const path = s => { let d = '', pen = false; s.forEach((v, i) => { if (v === null) { pen = false; return; } d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(v).toFixed(1); pen = true; }); return d; };
+  const dots = series.map((v, i) => v === null ? '' : `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="#4a627a"><title>Week of ${fmt(weeks[i][0])}: ${fmtV(v)}</title></circle>`).join('');
+  const last = series.length - 1;
+  return `<svg viewBox="0 0 ${W} ${H}">
+    <line x1="${P}" x2="${W - P}" y1="${H - 4}" y2="${H - 4}" stroke="#dee8f2"/>
+    <path d="${path(avgSeries)}" fill="none" stroke="#9fb2c4" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>
+    <path d="${path(series)}" fill="none" stroke="#4a627a" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    ${dots}
+  </svg>
+  <div class="trend__axis"><span>${fmt(weeks[0][0])}</span><span>Week of ${fmt(weeks[last][0])}</span></div>`;
+}
+
+function cmpBars(rows, max) {
+  return `<div class="cmp">${rows.map(r => `
+      <span class="cmp__label" title="${r.label}">${r.label}</span>
+      <div class="track"><div class="bar ${r.cls}" style="width:${Math.min(100, r.v / (max || 1) * 100)}%"></div></div>
+      <span class="cmp__val">${r.text}</span>`).join('')}</div>`;
+}
+
+function rankLine(key, D, r) {
+  const list = CARDS[key].list(D);
+  const i = list.indexOf(r);
+  return i < 0 ? '' : `<div class="solo__rank">Ranks <b>${ord(i + 1)}</b> of ${list.length} on this list</div>`;
+}
+const statusPill = (key, r) => r && METRICS[key].get(r) !== null
+  ? (isOver(key, r, TE) ? '<span class="pill pill--on">Over the limit</span>' : '<span class="pill pill--off">Within the limit</span>') : '';
+
+function soloCard(key, D, sub, kpi, body, foot) {
+  $(key).innerHTML = `
+    ${headHtml(key, D, sub)}
+    <div class="kpi">${kpi}</div>
+    <div class="card__body"><div class="solo">${body}</div></div>
+    <div class="card__foot">${foot || `<span class="legend"><span><i></i>${esc(focus.name.split(' ')[0])}</span><span><i class="dash"></i>Company avg</span></span>`}</div>`;
+}
+
+function renderSolo(D) {
+  const c = focus, a = D.a, b = D.b;
+  const r = D.rows.find(x => x.c === c);          // undefined if not started by the end of the range
+  const weeks = weeksEndingAt(b, 8);
+  const dash = '<span class="kpi__num kpi__num--zero">—</span>';
+  const notStarted = `<div class="empty">No encounters yet as of ${fmt(b, true)}.</div>`;
+
+  // m1 — first encounter
+  soloCard('m1', D, 'First encounter ever',
+    c.firstDay > b ? `${dash}<span class="kpi__label">Not started yet</span>`
+      : `<span class="kpi__num kpi__num--md">${fmt(c.firstDay)}</span><span class="kpi__label">${dt(c.firstDay).getUTCFullYear()}</span>`,
+    c.firstDay > b ? notStarted
+      : `<div class="solo__rank">${WD[dt(c.firstDay).getUTCDay()]}, ${fmt(c.firstDay, true)}</div>
+         <div style="margin-top:6px">${r.isNew ? '<span class="pill pill--new">New this period</span>' : '<span class="pill pill--off">Before this period</span>'}</div>`,
+    '<span>No limit</span>');
+
+  // m2 — drop
+  const prev = sum(c.enc, D.pa, D.pb), cur = sum(c.enc, a, b);
+  soloCard('m2', D, 'Selected period vs. the previous period',
+    r && r.drop !== null
+      ? `<span class="kpi__num ${isOver('m2', r, TE) ? 'kpi__num--alert' : ''}">${flagged(pct(r.drop), isOver('m2', r, TE))}</span>${statusPill('m2', r)}`
+      : `${dash}<span class="kpi__label">No full previous period</span>`,
+    `${r && r.drop !== null ? rankLine('m2', D, r) : ''}
+     ${cmpBars([
+       { label: 'Previous: ' + fmtRange(D.pa, D.pb), v: prev, text: prev, cls: 'bar--avg' },
+       { label: 'Selected: ' + fmtRange(a, b), v: cur, text: cur, cls: 'bar--you' }
+     ], Math.max(prev, cur))}
+     <div class="solo__rank" style="margin-top:10px">Company avg change: <b>${pct(D.avg.m2)}</b></div>`,
+    '<span>Encounters per period</span>');
+
+  // m3 — sync
+  const syncT = weeks.map(w => { const n = sum(c.enc, w[0], w[1]); return n ? sum(c.syncMin, w[0], w[1]) / n : null; });
+  const syncA = weeks.map(w => { let m = 0, n = 0; clinicians.forEach(k => { n += sum(k.enc, w[0], w[1]); m += sum(k.syncMin, w[0], w[1]); }); return n ? m / n : null; });
+  soloCard('m3', D, 'Average time from visit to sync',
+    r && r.sync !== null
+      ? `<span class="kpi__num ${isOver('m3', r, TE) ? 'kpi__num--alert' : ''}">${flagged(hm(r.sync), isOver('m3', r, TE))}</span>${statusPill('m3', r)}`
+      : `${dash}<span class="kpi__label">No visits in this period</span>`,
+    !r ? notStarted : `${r.sync !== null ? rankLine('m3', D, r) : ''}
+     ${cmpBars([
+       { label: esc(c.name), v: r.sync || 0, text: r.sync !== null ? hm(r.sync) : '—', cls: 'bar--you' },
+       { label: 'Company average', v: D.avg.m3, text: hm(D.avg.m3), cls: 'bar--avg' }
+     ], Math.max(r.sync || 0, D.avg.m3))}
+     <div class="trend"><div class="trend__head">Last 8 weeks</div>${trendSvg(syncT, syncA, hm, weeks)}</div>`);
+
+  // m4 — encounters
+  const encT = weeks.map(w => c.firstDay > w[1] ? null : sum(c.enc, w[0], w[1]));
+  const encA = weeks.map(w => { const act = clinicians.filter(k => k.firstDay <= w[1]); return act.reduce((s, k) => s + sum(k.enc, w[0], w[1]), 0) / act.length; });
+  soloCard('m4', D, 'Encounters in the period',
+    r ? `<span class="kpi__num ${isOver('m4', r, TE) ? 'kpi__num--alert' : ''}">${flagged(r.enc, isOver('m4', r, TE))}</span>${statusPill('m4', r)}`
+      : `${dash}<span class="kpi__label">Not started yet</span>`,
+    !r ? notStarted : `${rankLine('m4', D, r)}
+     ${cmpBars([
+       { label: esc(c.name), v: r.enc, text: r.enc, cls: 'bar--you' },
+       { label: 'Company average', v: D.avg.m4, text: D.avg.m4.toFixed(1), cls: 'bar--avg' }
+     ], Math.max(r.enc, D.avg.m4))}
+     <div class="trend"><div class="trend__head">Per week, last 8 weeks</div>${trendSvg(encT, encA, n => Math.round(n) + ' encounters', weeks)}</div>`);
+
+  // m5 — secondary states, combined
+  const over5 = r && isOver('m5', r, TE);
+  soloCard('m5', D, `Primary state: <b>${c.primary}</b>`,
+    !c.secondary.length ? `${dash}<span class="kpi__label">One state only</span>`
+      : r ? `<span class="kpi__num ${over5 ? 'kpi__num--alert' : ''}">${flagged(r.sec, over5)}</span>${statusPill('m5', r)}`
+      : `${dash}<span class="kpi__label">Not started yet</span>`,
+    !c.secondary.length ? `<div class="empty">${esc(c.name)} works in ${c.primary} only. This metric doesn't apply.</div>`
+      : !r ? notStarted
+      : `${rankLine('m5', D, r)}
+         <table class="sec-table" style="margin-top:6px"><tr><th>Secondary state</th><th class="num">Enc.</th></tr>
+           ${r.secBy.map(s => `<tr><td><span class="tag">${s.state}</span></td><td class="num">${s.n}</td></tr>`).join('')}
+           <tr class="total"><td>All secondary</td><td class="num">${flagged(r.sec, over5)}</td></tr></table>
+         <div class="solo__rank" style="margin-top:8px">Company avg: <b>${D.avg.m5.toFixed(1)}</b> · all states: <b>${r.enc}</b></div>`,
+    `<span>${c.secondary.length ? 'The limit is on the combined total' : ''}</span>`);
+}
+
+/* ════════════════ Render ════════════════ */
+function update() {
+  D = computeRows(state.range[0], state.range[1], state.cmp);
+  TE = effT(T, D);
+  $('tOpen').innerHTML = `${GEAR}Settings`;
+  [...$('seg').children].forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === state.n)));
+  $('seg').classList.toggle('seg--off', !!focus);
+  history.replaceState(null, '', stateQuery(state, T));
+  if (focus) renderSolo(D); else GROUP_KEYS.forEach(k => renderCard(k, D));
+}
+
+initRange(state, update);
+$('seg').addEventListener('click', e => { const b = e.target.closest('[data-n]'); if (b) { state.n = +b.dataset.n; update(); } });
+$('tOpen').addEventListener('click', () => openThresholds(T, next => { T = next; saveThresholds(T); update(); }));
+
+/* Clinician search */
+let hl = -1, matches = [];
+function openList() {
+  const q = $('q').value.trim().toLowerCase();
+  matches = q ? clinicians.filter(c => fullName(c).toLowerCase().includes(q)).slice(0, 8) : clinicians.slice().sort((x, y) => x.name.localeCompare(y.name)).slice(0, 8);
+  hl = matches.length ? 0 : -1;
+  $('qList').innerHTML = matches.length
+    ? matches.map((c, i) => `<div class="search__opt ${i === hl ? 'hl' : ''}" data-id="${c.id}"><span>${esc(fullName(c))}</span><small>${[c.primary].concat(c.secondary).join(' · ')}</small></div>`).join('')
+    : '<div class="search__none">No clinician matches that name.</div>';
+  $('qList').classList.add('open');
+}
+function closeList() { $('qList').classList.remove('open'); }
+function choose(c) {
+  focus = c; closeList();
+  $('q').value = fullName(c);
+  $('search').classList.add('search--filled');
+  $('focusName').textContent = fullName(c);
+  $('focusMeta').textContent = 'Primary state ' + c.primary + (c.secondary.length ? ' · Secondary ' + c.secondary.join(', ') : '') + ' · compared with the company average';
+  $('focusBanner').classList.add('show');
+  update();
+}
+function clearFocus() {
+  focus = null; $('q').value = '';
+  $('search').classList.remove('search--filled');
+  $('focusBanner').classList.remove('show');
+  update();
+}
+$('q').addEventListener('focus', openList);
+$('q').addEventListener('input', () => { $('search').classList.toggle('search--filled', !!$('q').value); openList(); });
+$('q').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); if (!matches.length) return;
+    hl = (hl + (e.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
+    [...$('qList').children].forEach((el, i) => el.classList.toggle('hl', i === hl));
+  } else if (e.key === 'Enter' && hl >= 0) { choose(matches[hl]); $('q').blur(); }
+  else if (e.key === 'Escape') { closeList(); $('q').blur(); }
+});
+$('qList').addEventListener('mousedown', e => { const o = e.target.closest('.search__opt'); if (o) { e.preventDefault(); choose(clinicians[o.dataset.id - 1]); $('q').blur(); } });
+$('q').addEventListener('blur', () => setTimeout(closeList, 100));
+$('qClear').addEventListener('click', clearFocus);
+$('focusClear').addEventListener('click', clearFocus);
+
+update();
+</script>
+</body>
+</html>

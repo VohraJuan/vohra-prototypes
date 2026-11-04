@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Clinicians — Clinician Payroll Dashboard — Prototype V4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="payroll-v4-shared.css">
+  <style>
+    .back { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 8px -4px; font-size: 14px; }
+    .back svg { width: 10px; height: 10px; }
+
+    .search { width: 260px; margin-left: 0; }
+    .check { display: inline-flex; align-items: center; gap: 8px; height: 34px; font-size: 13px; color: var(--text-dark); cursor: pointer; white-space: nowrap; }
+    .check input { width: 16px; height: 16px; accent-color: var(--blu); cursor: pointer; }
+    .filters .field--btn:last-child { margin-left: auto; }
+
+    .summary { margin: 0 30px 8px; display: flex; align-items: baseline; gap: 14px; font-size: 12px; color: var(--gra-text-2); }
+    .summary strong { color: var(--text-dark); }
+    .summary .flag { font-weight: 700; }
+    .summary__sort { margin-left: auto; }
+
+    .table-card { margin: 0 30px; background: #fff; border-radius: 4px; box-shadow: 0 0 4px rgba(0,0,0,.18); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: #fff;
+      text-align: left; vertical-align: bottom;
+      padding: 10px 12px 8px;
+      border-bottom: 2px solid var(--gra-01);
+    }
+    thead th:first-child { border-top-left-radius: 4px; }
+    thead th:last-child { border-top-right-radius: 4px; }
+    /* Group row (V3): sits above the column headers; both rows stay pinned */
+    #groupRow th { top: 0; height: 30px; padding: 8px 12px 4px; border-bottom: 1px solid var(--gra-01); font-family: 'Roboto Condensed', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-label); text-align: left; }
+    #headRow th { top: 30px; border-radius: 0; }
+    .grp-start { border-left: 1px solid var(--gra-01); }
+    th.num, td.num { text-align: right; }
+    .sort {
+      border: none; background: none; cursor: pointer; padding: 2px 4px; margin: 0 -4px; border-radius: 3px;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-label);
+      display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; text-align: inherit;
+    }
+    .sort:hover { background: var(--blue-ligh-11); color: var(--blu); }
+    .sort svg { width: 9px; height: 11px; color: var(--gra-text-1); opacity: .5; }
+    th[aria-sort] .sort { color: var(--blu); }
+    th[aria-sort] .sort svg { color: var(--blu); opacity: 1; }
+    .th__thr { display: block; font-size: 10px; font-weight: 400; color: var(--gra-text-1); margin-top: 2px; white-space: nowrap; }
+
+    tbody td { padding: 7px 12px; border-bottom: 1px solid var(--gra-02); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--blue-ligh-14); }
+    td.sorted { background: #f7fbfe; }
+    .cell { display: flex; flex-direction: column; gap: 1px; }
+    td.num .cell { align-items: flex-end; }
+    .v { font-family: 'Roboto Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-dark); white-space: nowrap; }
+    .v--none { color: var(--gra-text-1); font-weight: 400; }
+    .v .flag { font-weight: 700; }
+    .d { font-size: 10px; color: var(--gra-text-1); white-space: nowrap; }
+    .who { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .who .name { font-size: 13px; }
+    .tags { display: inline-flex; gap: 3px; }
+
+    .empty { padding: 34px 10px; text-align: center; font-size: 13px; color: var(--gra-text-1); }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div class="page-header">
+      <div>
+        <a class="link-btn back" id="back" href="#"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 1.5L3 5l3.5 3.5"/></svg>Back to dashboard</a>
+        <h1 class="page-title">All clinicians</h1>
+        <p class="page-desc">Every active clinician in the period, with all five metrics. Values over a limit are in red.</p>
+      </div>
+    </div>
+
+    <section class="filters">
+      <div class="field">
+        <label class="field-label" for="preset">Date range</label>
+        <div class="range-controls">
+          <select class="select" id="preset">
+          </select>
+          <input type="date" class="input input--date" id="from" aria-label="From">
+          <span class="range-sep">to</span>
+          <input type="date" class="input input--date" id="to" aria-label="To">
+        </div>
+        <div class="range-note" id="rangeNote"></div>
+      </div>
+      <div class="field search" id="search">
+        <label class="field-label" for="q">Clinician</label>
+        <svg class="search__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+        <input class="input" id="q" placeholder="Filter by name" autocomplete="off">
+        <button class="search__clear" id="qClear" aria-label="Clear filter">&times;</button>
+      </div>
+      <div class="field field--btn">
+        <label class="check"><input type="checkbox" id="onlyOver"> Only clinicians over a limit</label>
+      </div>
+      <div class="field field--btn">
+        <button class="btn" id="tOpen" type="button"></button>
+      </div>
+    </section>
+
+    <div class="summary" id="summary"></div>
+    <div class="table-card">
+      <table>
+        <thead><tr id="groupRow"></tr><tr id="headRow"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+  </main>
+
+<script src="payroll-v4-shared.js"></script>
+<script>
+mountChrome('<a href="#">Dashboard</a>&nbsp;&gt;&nbsp;<a href="#" id="crumbDash">Clinician Payroll Dashboard</a>&nbsp;&gt;&nbsp;All Clinicians');
+
+const DASH_PAGE = 'index.html';
+const state = readState();
+let T = loadThresholds(), TE = T;
+const q0 = new URLSearchParams(location.search);
+let sortKey = ['name', 'state', 'm1', 'm2', 'm3', 'm4', 'm5'].includes(state.sort) ? state.sort : 'm4';
+let sortDir = state.dir === 'asc' || state.dir === 'desc' ? state.dir : defaultDir(sortKey);
+let onlyOver = q0.get('over') === '1';
+
+function defaultDir(k) { return METRICS[k] ? METRICS[k].dir : 'asc'; }
+
+const COLS = [
+  { key: 'name',  label: 'Clinician',     get: r => r.c.name },
+  { key: 'state', label: 'Primary state', get: r => r.c.primary },
+  ...GROUP_KEYS.map(key => ({ key, num: true, first: GROUPS.some(g => g.keys[0] === key) }))
+];
+const sortLabel = k => ({ name: 'clinician', state: 'primary state' })[k] || METRICS[k].col.toLowerCase();
+const dirWord = (k, d) => {
+  if (k === 'name' || k === 'state') return d === 'asc' ? 'A–Z' : 'Z–A';
+  if (k === 'm1') return d === 'asc' ? 'earliest first' : 'latest first';
+  if (k === 'm3') return d === 'desc' ? 'longest first' : 'shortest first';
+  if (k === 'm2') return d === 'asc' ? 'biggest drop first' : 'biggest increase first';
+  return d === 'asc' ? 'fewest first' : 'most first';
+};
+
+const ARROWS = {
+  none: '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 0L8 4H1zM4.5 11L1 7h7z"/></svg>',
+  asc:  '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 1L8.5 6h-8z"/></svg>',
+  desc: '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 10L.5 5h8z"/></svg>'
+};
+
+function renderHead() {
+  $('groupRow').innerHTML = '<th colspan="2" class="gh gh--blank"></th>' +
+    GROUPS.map(g => `<th colspan="${g.keys.length}" class="gh grp-start" scope="colgroup">${g.title}</th>`).join('');
+  $('headRow').innerHTML = COLS.map(col => {
+    const m = METRICS[col.key], on = col.key === sortKey;
+    const label = col.label || m.col;
+    const thr = m && m.tText ? `<span class="th__thr">Limit: ${thrText(col.key, T, TE)}</span>` : (col.key === 'm1' ? '<span class="th__thr">In this period</span>' : '');
+    return `<th class="${col.num ? 'num' : ''}${col.first ? ' grp-start' : ''}" ${on ? `aria-sort="${sortDir === 'asc' ? 'ascending' : 'descending'}"` : ''}>
+      <button class="sort" data-sort="${col.key}">${label}${ARROWS[on ? sortDir : 'none']}</button>${thr}</th>`;
+  }).join('');
+}
+
+function cell(key, r) {
+  const m = METRICS[key], v = m.get(r), over = key !== 'm1' && isOver(key, r, TE);
+  let main, detail = '';
+  if (key === 'm1') {
+    main = v === null ? '<span class="v v--none">—</span>' : `<span class="v">${fmt(v, true)}</span>`;
+    if (v !== null) detail = WD[dt(v).getUTCDay()];
+  } else if (key === 'm5' && v === null) {
+    main = '<span class="v v--none" title="No secondary state">—</span>';
+  } else if (v === null) {
+    main = '<span class="v v--none">—</span>';
+    detail = key === 'm2' ? 'No full previous period' : 'No visits';
+  } else {
+    main = `<span class="v">${flagged(m.fmt(v), over)}</span>`;
+    if (key === 'm2') detail = `${r.prev} → ${r.cur}`;
+    if (key === 'm3') detail = plural(r.visits, 'visit');
+    if (key === 'm5') detail = r.secBy.map(s => `${s.state} ${s.n}`).join(' · ');
+  }
+  const first = GROUPS.some(g => g.keys[0] === key);
+  return `<td class="num ${key === sortKey ? 'sorted' : ''}${first ? ' grp-start' : ''}"><div class="cell">${main}${detail ? `<span class="d">${detail}</span>` : ''}</div></td>`;
+}
+
+function update() {
+  const D = computeRows(state.range[0], state.range[1], state.cmp);
+  TE = effT(T, D);
+  $('tOpen').innerHTML = `${GEAR}Settings`;
+  $('onlyOver').checked = onlyOver;
+  const query = stateQuery(state, T);
+  $('back').href = $('crumbDash').href = DASH_PAGE + query;
+  history.replaceState(null, '', stateQuery(state, T, { sort: sortKey, dir: sortDir, over: onlyOver ? 1 : 0 }));
+
+  const totalOver = D.rows.filter(r => anyOver(r, TE)).length;
+  const text = $('q').value.trim().toLowerCase();
+  let rows = D.rows.filter(r => (!text || fullName(r.c).toLowerCase().includes(text)) && (!onlyOver || anyOver(r, TE)));
+
+  const get = (COLS.find(c => c.key === sortKey).get) || METRICS[sortKey].get;
+  const sign = sortDir === 'asc' ? 1 : -1;
+  rows.sort((x, y) => {
+    const a = get(x), b = get(y);
+    if (a === null && b === null) return x.c.name.localeCompare(y.c.name);
+    if (a === null) return 1;                       // blanks always last
+    if (b === null) return -1;
+    const c = typeof a === 'string' ? a.localeCompare(b) : a - b;
+    return c * sign || x.c.name.localeCompare(y.c.name);
+  });
+
+  $('summary').innerHTML = `<span><strong>${plural(D.rows.length, 'clinician')}</strong> active in ${fmtRange(D.a, D.b)}</span>
+    <span>${totalOver ? `<span class="flag">${FLAG}${totalOver}</span> over at least one limit` : 'None over a limit'}</span>
+    ${rows.length !== D.rows.length ? `<span>Showing <strong>${rows.length}</strong></span>` : ''}
+    <span class="summary__sort">Sorted by ${sortLabel(sortKey)}, ${dirWord(sortKey, sortDir)}</span>`;
+
+  renderHead();
+  $('body').innerHTML = rows.length ? rows.map(r => `<tr>
+      <td class="${sortKey === 'name' ? 'sorted' : ''}"><div class="who">${nameLink(r.c)}${r.isNew ? '<span class="tag tag--new">New</span>' : ''}</div></td>
+      <td class="${sortKey === 'state' ? 'sorted' : ''}"><span class="tag">${r.c.primary}</span></td>
+      ${GROUP_KEYS.map(k => cell(k, r)).join('')}
+    </tr>`).join('')
+    : `<tr><td colspan="7"><div class="empty">${onlyOver && !text ? 'No clinicians are over a limit in this period.' : 'No clinician matches that name.'}</div></td></tr>`;
+}
+
+initRange(state, update);
+$('headRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-sort]'); if (!b) return;
+  const k = b.dataset.sort;
+  if (k === sortKey) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortKey = k; sortDir = defaultDir(k); }
+  update();
+});
+$('onlyOver').addEventListener('change', e => { onlyOver = e.target.checked; update(); });
+$('q').addEventListener('input', () => { $('search').classList.toggle('search--filled', !!$('q').value); update(); });
+$('qClear').addEventListener('click', () => { $('q').value = ''; $('search').classList.remove('search--filled'); update(); $('q').focus(); });
+$('tOpen').addEventListener('click', () => openThresholds(T, next => { T = next; saveThresholds(T); update(); }));
+
+update();
+</script>
+</body>
+</html>
