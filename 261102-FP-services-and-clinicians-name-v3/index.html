@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>261102-FP Dashboard header and Services docs menu item — v3 (final)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Values from Figma 260802-FP-FACILITY-DASHBOARD, node 1274:153. Reference for the final design, not production CSS. */
+:root {
+  --text: #014378; --gra-text-2: #4a627a; --blu: #006ab5;
+  --blue-dar-04: #00508d; --blue-dar-08: #013664; --blue-dar-11: #012246;
+  --blue-ligh-02: #2b83c2; --blue-ligh-04: #559dd0; --blue-ligh-05: #6ba9d7; --blue-ligh-06: #80b6dd;
+  --blue-ligh-07: #96c4e3; --blue-ligh-08: #abd2eb; --blue-ligh-09: #cae6fc; --blue-ligh-10: #dbf0ff;
+  --blue-ligh-11: #e3f4ff; --blue-ligh-12: #edfaff; --blue-ligh-13: #f5fcff;
+  --gra-01: #dee8f2; --gra-02: #ebf4fa; --bar-bg: #edf0f4;
+  --red: #c12424; --red-light: #f99a9a; --amber: #d89200; --amber-light: #ffc752;
+  --roboto: "Roboto", sans-serif; --sans: "Open Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--sans); color: var(--text); background: var(--blue-ligh-13); min-width: 1180px; }
+button { font: inherit; }
+
+/* ---------- Top nav ---------- */
+.nav { height: 75px; display: flex; align-items: center; gap: 24px; padding: 0 31px 0 27px;
+  background: linear-gradient(90deg, var(--blue-dar-11) 0%, var(--blue-dar-08) 100%); color: #fff; }
+.nav__logo { width: 140px; height: auto; }
+.nav__divider { width: 1px; height: 40px; background: rgba(255,255,255,.17); }
+.nav__title { font-family: var(--roboto); font-weight: 700; font-size: 24px; line-height: 28px; margin: 0; white-space: nowrap; }
+.nav__period { font-size: 14px; line-height: 19px; }
+.nav__period b { font-weight: 700; }
+.nav__spacer { flex: 1; }
+.facility { display: flex; align-items: center; gap: 12px; padding: 7px 14px 7px 9px; border-radius: 8px; background: var(--blue-dar-08); max-width: 465px; min-width: 0; cursor: pointer; }
+.facility svg { flex: none; }
+.facility__sep { width: 1px; height: 24px; background: rgba(255,255,255,.17); }
+.facility__name { font-weight: 700; font-size: 16px; line-height: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.facility__addr { font-size: 10px; line-height: 14px; opacity: .85; }
+.user { display: flex; align-items: center; gap: 8px; padding-left: 16px; border-left: 1px solid rgba(255,255,255,.17); font-family: var(--roboto); font-weight: 500; font-size: 18px; white-space: nowrap; }
+.user__avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--blue-dar-04); font-size: 11px; display: grid; place-items: center; }
+
+
+/* ---------- facility block with the Vohra clinician, profile dropdown ---------- */
+.facility { align-items: center; cursor: default; }
+.facility__line { font-size: 12px; line-height: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.facility__line .lbl { opacity: .8; }
+.facility__line b { font-weight: 700; }
+.user { background: none; border: 0; border-left: 1px solid rgba(255,255,255,.17); color: #fff; cursor: pointer; }
+.user:focus-visible { outline: 2px solid #ffc752; outline-offset: 3px; }
+.user__chev { transition: transform .15s; }
+.user[aria-expanded="true"] .user__chev { transform: rotate(180deg); }
+.nav { position: relative; z-index: 30; }
+.menu { position: absolute; top: 66px; right: 24px; z-index: 40; width: 232px; padding: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--blue-ligh-10); box-shadow: 0 4px 16px rgba(1,34,70,.22); }
+.menu[hidden] { display: none; }
+.menu__item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 6px; background: none; color: var(--blu); font-family: var(--roboto); font-weight: 500; font-size: 15px; text-align: left; text-decoration: none; cursor: pointer; }
+.menu__item:hover { background: var(--blue-ligh-12); }
+.menu__item[aria-current="page"] { background: var(--blue-ligh-11); }
+.menu__item--new { box-shadow: inset 0 0 0 1px var(--blue-ligh-09); }
+.menu__logout { display: block; width: 100%; margin-top: 6px; padding: 8px; border: 1px solid var(--blue-dar-08); border-radius: 4px; background: #fff; color: var(--blu); font-size: 14px; cursor: pointer; }
+
+/* ---------- KPI band ---------- */
+.band { padding: 19px 40px 18px; background: linear-gradient(180deg, var(--blue-ligh-07) 0%, var(--blue-ligh-09) 100%); }
+.band__row { display: flex; justify-content: center; gap: 20px; }
+.tile { position: relative; width: 280px; min-height: 96px; padding: 13px 12px; border-radius: 8px; overflow: hidden; cursor: pointer;
+  background: linear-gradient(180deg, var(--blue-ligh-04), var(--blue-ligh-06)); border: 1px solid var(--blue-ligh-11);
+  box-shadow: 0 0 5px 0 var(--blue-ligh-05); color: var(--blue-ligh-12); display: flex; flex-direction: column; gap: 12px; }
+.tile:hover { box-shadow: 0 0 10px 0 var(--blue-ligh-05); }
+.tile--alert { border-color: var(--red); box-shadow: 0 0 10px 0 var(--red-light); }
+.tile__title { font-weight: 700; font-size: 14px; line-height: 13.5px; letter-spacing: .72px; text-transform: uppercase; }
+.tile__body { display: flex; align-items: flex-start; gap: 6px; }
+.tile__value { font-weight: 700; font-size: 32px; line-height: 27px; letter-spacing: -.81px; color: #fff; white-space: nowrap; }
+.tile--alert .tile__value { color: var(--red); }
+.tile__text { font-size: 11px; line-height: 13px; }
+.tile__text b { display: block; font-weight: 700; }
+.badge { position: absolute; top: -1px; right: -1px; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-bottom-left-radius: 4px;
+  background: var(--red); color: #fff; font-family: var(--roboto); font-weight: 700; font-size: 10px; line-height: 10px; }
+.card .badge { font-size: 11px; padding: 6px 13px; gap: 6px; }
+
+/* ---------- Cards ---------- */
+.main { max-width: 1591px; margin: 0 auto; padding: 37px 40px 48px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px 35px; }
+.card { position: relative; height: 400px; padding: 40px 24px 24px; background: #fff; border: 1px solid var(--blue-ligh-10); border-radius: 16px;
+  box-shadow: 0 0 14px 0 var(--blue-ligh-09); overflow: hidden; display: flex; flex-direction: column; }
+.card--alert { border-color: var(--red); }
+.card__handle { position: absolute; top: 10px; left: 28px; }
+.card__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; min-height: 34px; margin-bottom: 30px; }
+.card__titles { min-width: 0; }
+.card__title { margin: 0; font-family: var(--roboto); font-weight: 500; font-size: 24px; line-height: 26px; letter-spacing: .5px; display: flex; align-items: flex-start; gap: 6px; }
+.card__title .info { margin-top: 4px; }
+.card__sub { margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--blu); letter-spacing: .3px; }
+.card__num { font-weight: 700; font-size: 46px; line-height: 34px; letter-spacing: 1px; white-space: nowrap; }
+.card--alert .card__num { color: var(--red); }
+.info { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--gra-01); color: var(--blue-ligh-04); font: 700 10px/16px var(--sans); text-align: center; }
+
+.bars { display: flex; flex-direction: column; gap: 16px; }
+.bar__row { display: flex; justify-content: space-between; letter-spacing: 1px; margin-bottom: 3px; }
+.bar__label { font-size: 12px; line-height: 13.5px; color: var(--gra-text-2); }
+.bar__val { font-weight: 700; font-size: 14px; line-height: 13.5px; }
+.bar { height: 9px; border-radius: 20px; background: var(--bar-bg); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 20px; background: var(--blue-ligh-04); }
+.bar i.red { background: var(--red); }
+
+.stages { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 16px; margin-top: -12px; }
+.stages__sep { background: var(--gra-01); }
+.stages__head { font-weight: 700; font-size: 11px; letter-spacing: .6px; text-transform: uppercase; color: var(--blu); margin: 8px 0 6px; }
+.stage { display: grid; grid-template-columns: 1fr minmax(36px, 74px) 16px; align-items: center; gap: 8px; height: 30px; font-size: 12px; white-space: nowrap; color: var(--gra-text-2); }
+.stage b { color: var(--text); font-size: 13px; text-align: right; }
+.stage .bar { height: 5px; }
+
+.list__row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--gra-02); font-size: 12px; line-height: 16.5px; color: var(--gra-text-2); }
+.list__row b { font-weight: 600; }
+.list__row b.red { color: var(--red); } .list__row b.amber { color: var(--amber); } .list__row b.blue { color: var(--blu); }
+
+.poa { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.poa__box { height: 122px; border-radius: 6px; display: grid; place-content: center; text-align: center; }
+.poa__box b { display: block; font-size: 32px; line-height: 36px; }
+.poa__box span { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.poa__box--in { background: var(--blue-ligh-11); color: var(--blu); }
+.poa__box--out { background: #fdecec; color: var(--red); }
+.poa__bar { display: flex; height: 8px; border-radius: 8px; overflow: hidden; margin: 16px 0; }
+.poa__note { font-size: 12px; color: var(--gra-text-2); }
+
+.chart { margin-top: -14px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart__legend { display: flex; justify-content: center; gap: 20px; font-size: 10px; color: var(--gra-text-2); margin-top: 4px; }
+.chart__legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; background: var(--c); vertical-align: -1px; }
+.chart__note { font-size: 11px; color: var(--gra-text-2); text-align: center; margin-top: 8px; }
+
+@media (max-width: 1400px) {
+  .facility { max-width: 380px; }
+  .stages { gap: 10px; }
+}
+
+/* ---------- Footer ---------- */
+.footer { display: flex; justify-content: space-between; padding: 10px 45px; background: var(--blue-dar-11); color: #fff; font-size: 12px; line-height: 18px; }
+
+/* ---------- Demo controls (prototype only, outside the product) ---------- */
+.demo { position: fixed; right: 16px; bottom: 54px; z-index: 50; width: 268px; padding: 14px 16px; border-radius: 10px; background: #1f2933; color: #fff; font: 12px/1.4 var(--sans); box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.demo h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: #ffc752; }
+.demo p { margin: 0 0 10px; color: #c9d3dd; font-size: 11px; }
+.demo__group { margin-bottom: 10px; }
+.demo__label { display: block; margin-bottom: 4px; color: #c9d3dd; font-size: 11px; }
+.demo__seg { display: flex; gap: 4px; flex-wrap: wrap; }
+.demo__seg button { flex: 1; padding: 6px 6px; border: 1px solid #4b5866; border-radius: 6px; background: transparent; color: #fff; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.demo__seg button:hover { background: #33404d; }
+.demo__seg button[aria-pressed="true"] { background: #fff; color: #1f2933; border-color: #fff; font-weight: 700; }
+.demo__opt-desc { font-size: 11px; color: #c9d3dd; margin-top: 6px; min-height: 30px; }
+.demo [hidden] { display: none; }
+.demo__toggle { position: absolute; top: 8px; right: 10px; border: 0; background: none; color: #c9d3dd; cursor: pointer; font-size: 14px; }
+.demo--min > :not(h4):not(.demo__toggle) { display: none; }
+
+/* ---------- Clickable-area highlight (prototype only) ---------- */
+.demo__check { width: 100%; padding: 6px 8px; border: 1px solid #4b5866; border-radius: 6px; background: transparent; color: #fff; font-size: 11px; cursor: pointer; text-align: left; }
+.demo__check:hover { background: #33404d; }
+.demo__check[aria-pressed="true"] { background: #fff; color: #1f2933; border-color: #fff; font-weight: 700; }
+.demo__legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: #c9d3dd; }
+.demo__legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.demo__changes { margin-top: 2px; padding-top: 10px; border-top: 1px solid #4b5866; font-size: 11px; line-height: 1.5; color: #c9d3dd; }
+.demo__changes b { color: #fff; }
+body.hl [data-hot], body.hl-flash [data-hot] { outline: 2px solid var(--hot, #14a0f0); outline-offset: 2px; box-shadow: 0 0 0 5px color-mix(in srgb, var(--hot, #14a0f0) 30%, transparent); }
+[data-hot="new"] { --hot: #ff7a00; }
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <a href="index.html" title="Home" aria-label="Vohra, go to home" style="line-height:0"><img class="nav__logo" src="logo.svg" alt="Vohra"></a>
+  <span class="nav__divider"></span>
+  <div>
+    <h1 class="nav__title">Clinical Outcomes Dashboard</h1>
+    <div class="nav__period">Reporting period: <b>Last 30 days</b></div>
+  </div>
+  <span class="nav__spacer"></span>
+  <div class="facility" id="facility" title="Switch facility"></div>
+  <button class="user" id="userBtn" data-hot="existing" aria-haspopup="true" aria-expanded="true"><span class="user__avatar">JD</span>Jane Doe
+    <svg class="user__chev" width="14" height="7" viewBox="0 0 16 8" fill="none" aria-hidden="true"><path d="m1 1 7 6 7-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
+  <div class="menu" id="menu" role="menu">
+    <button class="menu__item" role="menuitem" aria-current="page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z" fill="#006ab5"/></svg>Home</button>
+    <button class="menu__item" role="menuitem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 21h20z" fill="#006ab5"/><path d="M12 10v5M12 17.5v.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Alert settings</button>
+    <a class="menu__item menu__item--new" role="menuitem" href="services.html" data-hot="new">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/></svg>Services docs</a>
+    <button class="menu__logout">Log Out</button>
+  </div>
+</header>
+
+<div id="app"></div>
+
+<footer class="footer">
+  <span>Privacy Policy | Terms &amp; Conditions</span>
+  <span>© Vohra Wound Physicians 2026, vH5 Medical Documentation and Coding Certification. Version: 1.1.01</span>
+</footer>
+
+<aside class="demo" id="demo" aria-label="Prototype controls">
+  <button class="demo__toggle" id="demoMin" title="Minimise">–</button>
+  <h4>Prototype controls</h4>
+  <p>Not part of the product.</p>
+  <div class="demo__group">
+    <span class="demo__label">Profile menu</span>
+    <div class="demo__seg" data-key="menu"><button data-val="open">Open</button><button data-val="closed">Closed</button></div>
+  </div>
+  <div class="demo__group">
+    <span class="demo__label">Clickable areas</span>
+    <button class="demo__check" id="hlBtn" aria-pressed="false">Show clickable areas</button>
+    <div class="demo__legend"><span><i style="background:#14a0f0"></i>Already exists</span><span><i style="background:#ff7a00"></i>New</span></div>
+    <div class="demo__legend" style="display:block">Or click anywhere on the page to flash them. Items not outlined don't do anything in this prototype.</div>
+  </div>
+  <div class="demo__changes"><b>What changed on this page</b><br>
+    The facility block now shows the Vohra clinician under the facility name ("Vohra clinician: name"), and the address line is removed. The profile menu has two new items: Home, and Services docs, which opens the new page. The menu is the same on every page.</div>
+</aside>
+
+<script>
+const S = Object.assign({ menu: "open" }, Object.fromEntries(new URLSearchParams(location.search)));
+
+const handle = `<svg class="card__handle" width="16" height="11" viewBox="0 0 16 11" aria-hidden="true" fill="#96c4e3">
+  <circle cx="2" cy="2" r="1.6"/><circle cx="8" cy="2" r="1.6"/><circle cx="14" cy="2" r="1.6"/>
+  <circle cx="2" cy="9" r="1.6"/><circle cx="8" cy="9" r="1.6"/><circle cx="14" cy="9" r="1.6"/></svg>`;
+const lock = `<svg class="card__handle" width="14" height="16" viewBox="0 0 14 16" aria-hidden="true"><rect x="1" y="7" width="12" height="8.5" rx="2" fill="#96c4e3"/><path d="M3.5 7V5a3.5 3.5 0 0 1 7 0v2" stroke="#96c4e3" stroke-width="2" fill="none"/></svg>`;
+const warn = `<svg width="11" height="10" viewBox="0 0 12 11" aria-hidden="true"><path d="M6 0.5 11.5 10.5H.5z" fill="#fff"/><path d="M6 4v3M6 8.4v.2" stroke="#c12424" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+const info = `<span class="info" aria-hidden="true">i</span>`;
+
+const bars = rows => `<div class="bars">${rows.map(([l, v, w, red]) => `
+  <div><div class="bar__row"><span class="bar__label">${l}</span><span class="bar__val">${v}</span></div>
+  <div class="bar"><i class="${red ? "red" : ""}" style="width:${w}%"></i></div></div>`).join("")}</div>`;
+const list = (rows, cls) => rows.map(([l, v]) => `<div class="list__row"><span>${l}</span><b class="${cls}">${v}</b></div>`).join("");
+const stageCol = (head, vals) => `<div><div class="stages__head">${head}</div>${["Stage 1","Stage 2","Stage 3","Stage 4","Unstg / DTI"].map((s, i) =>
+  `<div class="stage"><span>${s}</span><div class="bar"><i class="${i === 3 && vals[i] ? "red" : ""}" style="width:${vals[i] ? 60 : 0}%"></i></div><b>${vals[i]}</b></div>`).join("")}</div>`;
+
+const CARDS = [
+  { id: "new", title: "New wounds this week", sub: "2 newly acquired pressure injuries", num: "3/2", alert: "Above 2", locked: true,
+    body: () => bars([["Pressure injury", 2, 100, true], ["Diabetic / vascular", 1, 55], ["Surgical / traumatic", 0, 0], ["End-stage skin failure", 0, 0]]) },
+  { id: "active", title: "Active wounds", num: "14",
+    body: () => bars([["Pressure injury", 6, 48], ["Diabetic / vascular", 4, 38], ["Surgical / traumatic", 3, 29], ["End-stage skin failure", 1, 10]]) },
+  { id: "mod", title: "Advanced Modalities", num: "18",
+    body: () => bars([["Selective debridement", 6, 48], ["Surgical excisional debridement", 4, 38], ["Ultrasound Mist Therapy (UMT)", 3, 29],
+      ["Skin substitute / cellular graft", 2, 19], ["MolecuLight bacterial fluorescence imaging", 1, 10], ["Negative pressure wound therapy (NPWT)", 2, 19]]) },
+  { id: "poa", title: "PI On Admission",
+    body: () => `<div class="poa"><div class="poa__box poa__box--in"><b>75%</b><span>Present on admission</span></div>
+      <div class="poa__box poa__box--out"><b>25%</b><span>Not indicated</span></div></div>
+      <div class="poa__bar"><i style="width:82%;background:var(--blu)"></i><i style="flex:1;background:var(--red)"></i></div>
+      <div class="poa__note">Pressure Injuries POA Indicated 82% · 6 of 8 treated in the last 30 days.</div>` },
+  { id: "pistage", title: "PI Stage Distribution", sub: "Active PI / Stg 3, 4 &amp; unstaged", num: "12/6",
+    body: () => `<div class="stages">${stageCol("Long-Stay &gt;100d · 8", [1,1,0,1,0])}<span class="stages__sep"></span>${stageCol("Short-Stay &lt;100d · 4", [1,1,0,0,0])}</div>` },
+  { id: "worse", title: "Worsening Wounds", num: "5", alert: "Above 4",
+    body: () => list([["Resident K · Coccyx (DTI)", "Exacerbated"], ["Resident M · Sacrum (Stage 3)", "Exacerbated"], ["Resident K · Coccyx (DTI)", "Exacerbated"],
+      ["Resident M · Sacrum (Stage 3)", "Exacerbated"], ["Resident M · Sacrum (Stage 3)", "Exacerbated"]], "red") },
+  { id: "wsa", title: "Wound Surface Area",
+    body: () => `<div class="chart"><svg viewBox="0 0 430 250" aria-hidden="true" font-family="Open Sans" font-size="9" fill="#4a627a">
+      ${[["100%",14],["50%",66],["0",118],["-50%",170],["-100%",222]].map(([t,y]) => `<text x="22" y="${y-4}">${t}</text><line x1="22" x2="430" y1="${y}" y2="${y}" stroke="#dee8f2"/>`).join("")}
+      <text x="8" y="120" transform="rotate(-90 8 120)" text-anchor="middle" font-size="8">% change in wound surface area vs baseline</text>
+      <polyline points="52,118 424,66" stroke="#f08a24" stroke-width="2" fill="none"/><circle cx="424" cy="66" r="4" fill="#f08a24"/>
+      <polyline points="52,118 424,206" stroke="#1dcc68" stroke-width="2" fill="none"/><circle cx="424" cy="206" r="4" fill="#1dcc68"/>
+      <polyline points="52,118 424,118" stroke="#006ab5" stroke-width="2" fill="none"/><circle cx="52" cy="118" r="3.5" fill="#006ab5"/><circle cx="424" cy="118" r="3.5" fill="#006ab5"/>
+      <text x="40" y="244">Baseline visit</text><text x="430" y="244" text-anchor="end">Last visit</text></svg>
+      <div class="chart__legend"><span style="--c:#006ab5">Facility median</span><span style="--c:#f08a24">75 percentile</span><span style="--c:#1dcc68">25 percentile</span></div>
+      <div class="chart__note">Positive values indicate enlargement, and negative values indicate reduction</div></div>` },
+  { id: "stalled", title: "Stalled Wounds", num: "3",
+    body: () => list([["John Smith · Right calf", "6.2 cm²"], ["Welma Blake · Left leg", "12 cm²"], ["John Smith · Right calf", "6.2 cm²"],
+      ["Welma Blake · Left leg", "12 cm²"], ["John Smith · Right calf", "6.2 cm²"]], "amber") },
+  { id: "transfer", title: "Wound-related transfer / Hospitalization", num: "3",
+    body: () => list([["Sign Off Due to Hospitalization (Wound)", "2"], ["Rescheduled Due to Hospitalization (Wound)", "1"]], "blue") }
+];
+
+const TILES = [
+  { id: "new", title: "New wound", value: "3", text: "<b>New wound this week</b>2 newly acquired pressure injuries", alert: "Above 2" },
+  { id: "worse", title: "Worsening wounds", value: "5", alert: "Above 4" },
+  { id: "pistage", title: "PI Stage Distribution", value: "12/6", text: "<b>Active PI / Stg 3, 4 &amp; unstaged</b>8 Long-Stay / 4 Short-Stay" },
+  { id: "wsa", title: "Wound surface area", value: "0%", text: "<b>Facility median</b>change vs baseline" },
+  { id: "stalled", title: "Stalled wounds", value: "3" }
+];
+
+const FACILITY = { name: "Port St. Lucie Rehabilitation and Healthcare", clin: "Maria Alvarez, MD" };  // sample data
+const pin = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="9" r="6" stroke="#ffc752" stroke-width="2"/><path d="M8.5 13.5 7 21l5-2.5 5 2.5-1.5-7.5" stroke="#ffc752" stroke-width="2" stroke-linejoin="round"/></svg>`;
+const chev = `<svg width="16" height="8" viewBox="0 0 16 8" fill="none" aria-hidden="true"><path d="m1 1 7 6 7-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const card = c => `<section class="card ${c.alert ? "card--alert" : ""}" aria-label="${c.title}">
+  ${c.locked ? lock : handle}
+  ${c.alert ? `<span class="badge">${warn}${c.alert}</span>` : ""}
+  <div class="card__head"><div class="card__titles"><h2 class="card__title">${c.title} ${info}</h2>${c.sub ? `<div class="card__sub">${c.sub}</div>` : ""}</div>
+    ${c.num ? `<div class="card__num">${c.num}</div>` : ""}</div>
+  ${c.body()}</section>`;
+
+const tile = t => `<div class="tile ${t.alert ? "tile--alert" : ""}">${t.alert ? `<span class="badge">${warn}${t.alert}</span>` : ""}
+  <div class="tile__title">${t.title}</div><div class="tile__body"><span class="tile__value">${t.value}</span>${t.text ? `<span class="tile__text">${t.text}</span>` : ""}</div></div>`;
+
+function render() {
+  document.getElementById("facility").innerHTML = `${pin}<span class="facility__sep"></span><div style="min-width:0"><div class="facility__name">${FACILITY.name}</div>
+    <div class="facility__line"><span class="lbl">Vohra clinician:</span> <b>${FACILITY.clin}</b></div></div>${chev}`;
+  document.getElementById("app").innerHTML = `<div class="band"><div class="band__row">${TILES.map(tile).join("")}</div></div>
+    <main class="main"><div class="grid">${CARDS.map(card).join("")}</div></main>`;
+  const menu = document.getElementById("menu"), btn = document.getElementById("userBtn");
+  menu.hidden = S.menu !== "open"; btn.setAttribute("aria-expanded", S.menu === "open");
+  document.querySelectorAll(".demo__seg button").forEach(b => b.setAttribute("aria-pressed", S.menu === b.dataset.val));
+}
+
+document.querySelector(".demo__seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; S.menu = b.dataset.val; render();
+});
+document.getElementById("userBtn").addEventListener("click", () => { S.menu = S.menu === "open" ? "closed" : "open"; render(); });
+document.getElementById("demoMin").addEventListener("click", () => document.getElementById("demo").classList.toggle("demo--min"));
+
+/* Clickable areas: toggle in the panel keeps them outlined; a click anywhere else flashes them (as in the Figma prototype). */
+const hlBtn = document.getElementById("hlBtn");
+hlBtn.addEventListener("click", () => { const on = !document.body.classList.contains("hl"); document.body.classList.toggle("hl", on); hlBtn.setAttribute("aria-pressed", on); });
+let flashTimer;
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-hot], .demo")) return;
+  document.body.classList.add("hl-flash"); clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => document.body.classList.remove("hl-flash"), 1400);
+});
+render();
+</script>
+</body>
+</html>

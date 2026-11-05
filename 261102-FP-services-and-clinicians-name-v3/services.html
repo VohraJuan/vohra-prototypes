@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>261102-FP Services docs — v3 (final)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens from the Facility Portal dashboard (Figma 260802-FP-FACILITY-DASHBOARD). Exploration only, not production CSS. */
+:root {
+  --text: #014378; --gra-text-2: #4a627a; --blu: #006ab5;
+  --blue-dar-04: #00508d; --blue-dar-08: #013664; --blue-dar-11: #012246;
+  --blue-ligh-06: #80b6dd; --blue-ligh-09: #cae6fc; --blue-ligh-10: #dbf0ff;
+  --blue-ligh-11: #e3f4ff; --blue-ligh-12: #edfaff; --blue-ligh-13: #f5fcff;
+  --line: #dbe9f5;
+  --roboto: "Roboto", sans-serif; --sans: "Open Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--sans); color: var(--text); background: var(--blue-ligh-13); min-width: 1180px; }
+button { font: inherit; }
+a { color: var(--blu); }
+
+/* ---------- Top nav (reporting period and facility switcher removed on this page) ---------- */
+.nav { position: relative; height: 75px; display: flex; align-items: center; gap: 24px; padding: 0 31px 0 27px;
+  background: linear-gradient(90deg, var(--blue-dar-11) 0%, var(--blue-dar-08) 100%); color: #fff; }
+.nav__home { display: block; line-height: 0; border-radius: 4px; }
+.nav__home:focus-visible, .nav__back:focus-visible, .user:focus-visible { outline: 2px solid #ffc752; outline-offset: 3px; }
+.nav__logo { width: 140px; height: auto; }
+.nav__divider { width: 1px; height: 40px; background: rgba(255,255,255,.17); }
+.nav__back { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px 9px 12px; border: 1px solid rgba(255,255,255,.4); border-radius: 8px; color: #fff; font-family: var(--roboto); font-weight: 500; font-size: 15px; line-height: 20px; text-decoration: none; }
+.nav__back:hover { background: rgba(255,255,255,.12); border-color: #fff; }
+.nav__spacer { flex: 1; }
+.user { display: flex; align-items: center; gap: 8px; padding: 0 0 0 16px; border: 0; border-left: 1px solid rgba(255,255,255,.17); background: none; color: #fff; font-family: var(--roboto); font-weight: 500; font-size: 18px; white-space: nowrap; cursor: pointer; }
+.user__avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--blue-dar-04); font-size: 11px; display: grid; place-items: center; }
+.user__chev { transition: transform .15s; }
+.user[aria-expanded="true"] .user__chev { transform: rotate(180deg); }
+
+/* ---------- Profile dropdown ---------- */
+.menu { position: absolute; top: 66px; right: 24px; z-index: 20; width: 232px; padding: 8px; border-radius: 8px; background: #fff; border: 1px solid var(--blue-ligh-10);
+  box-shadow: 0 4px 16px rgba(1,34,70,.22); }
+.menu[hidden] { display: none; }
+.menu__item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; border: 0; border-radius: 6px; background: none; color: var(--blu); font-family: var(--roboto); font-weight: 500; font-size: 15px; text-align: left; text-decoration: none; cursor: pointer; }
+.menu__item:hover { background: var(--blue-ligh-12); }
+.menu__item[aria-current="page"] { background: var(--blue-ligh-11); }
+.menu__item[hidden] { display: none; }
+.menu__logout { display: block; width: 100%; margin-top: 6px; padding: 8px; border: 1px solid var(--blue-dar-08); border-radius: 4px; background: #fff; color: var(--blu); font-size: 14px; cursor: pointer; }
+
+/* ---------- Page ---------- */
+.page { max-width: 1040px; margin: 0 auto; padding: 44px 32px 64px; }
+.page__title { margin: 0 0 10px; font-family: var(--roboto); font-weight: 500; font-size: 32px; line-height: 38px; color: var(--text); }
+.page__intro { margin: 0; max-width: 760px; font-size: 16px; line-height: 26px; color: var(--gra-text-2); text-wrap: pretty; }
+
+.group { margin-top: 40px; scroll-margin-top: 24px; }
+.group__title { margin: 0 0 4px; font-family: var(--roboto); font-weight: 500; font-size: 20px; line-height: 26px; color: var(--text); }
+.group__sub { margin: 0 0 16px; font-size: 14px; line-height: 21px; color: var(--gra-text-2); }
+.group__title + .grid, .group__title + .rows { margin-top: 14px; }
+
+.icon { flex: none; width: 48px; height: 48px; border-radius: 12px; background: var(--blue-ligh-11); display: grid; place-items: center; }
+.icon svg { width: 26px; height: 26px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--blue-ligh-06); border-radius: 8px; background: #fff; color: var(--blu); font-weight: 600; font-size: 14px; line-height: 18px; text-decoration: none; white-space: nowrap; }
+.btn:hover { background: var(--blue-ligh-11); border-color: var(--blu); }
+.btn:focus-visible { outline: 2px solid var(--blu); outline-offset: 2px; }
+.btn__type { font-weight: 400; color: var(--gra-text-2); }
+
+/* Layout A: cards */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid--one { grid-template-columns: 1fr; }
+.card { display: flex; flex-direction: column; gap: 10px; padding: 22px 24px 20px; border-radius: 16px; background: #fff; border: 1px solid var(--blue-ligh-10); box-shadow: 0 0 14px 0 var(--blue-ligh-10); }
+.card__head { display: flex; align-items: center; gap: 14px; }
+.card__title { margin: 0; font-family: var(--roboto); font-weight: 500; font-size: 18px; line-height: 24px; color: var(--text); }
+.card__text { margin: 0; flex: 1; font-size: 14px; line-height: 22px; color: var(--gra-text-2); text-wrap: pretty; }
+.card .btn { align-self: flex-start; margin-top: 6px; }
+
+.help { margin-top: 40px; display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-radius: 12px; background: var(--blue-ligh-11); font-size: 14px; line-height: 22px; color: var(--text); }
+.help svg { flex: none; }
+.help b { font-weight: 700; }
+
+/* ---------- Footer ---------- */
+.footer { display: flex; justify-content: space-between; padding: 10px 45px; background: var(--blue-dar-11); color: #fff; font-size: 12px; line-height: 18px; }
+
+/* ---------- Demo controls (prototype only, outside the product) ---------- */
+.demo { position: fixed; right: 16px; bottom: 54px; z-index: 50; width: 268px; padding: 14px 16px; border-radius: 10px; background: #1f2933; color: #fff; font: 12px/1.4 var(--sans); box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.demo h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: #ffc752; }
+.demo p { margin: 0 0 10px; color: #c9d3dd; font-size: 11px; }
+.demo__group { margin-bottom: 10px; }
+.demo__label { display: block; margin-bottom: 4px; color: #c9d3dd; font-size: 11px; }
+.demo__seg { display: flex; gap: 4px; flex-wrap: wrap; }
+.demo__seg button { flex: 1; padding: 6px 6px; border: 1px solid #4b5866; border-radius: 6px; background: transparent; color: #fff; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.demo__seg button:hover { background: #33404d; }
+.demo__seg button[aria-pressed="true"] { background: #fff; color: #1f2933; border-color: #fff; font-weight: 700; }
+.demo__desc { font-size: 11px; color: #c9d3dd; margin-top: 6px; min-height: 30px; }
+.demo__toggle { position: absolute; top: 8px; right: 10px; border: 0; background: none; color: #c9d3dd; cursor: pointer; font-size: 14px; }
+.demo--min > :not(h4):not(.demo__toggle) { display: none; }
+
+/* ---------- Clickable-area highlight (prototype only) ---------- */
+.demo__check { width: 100%; padding: 6px 8px; border: 1px solid #4b5866; border-radius: 6px; background: transparent; color: #fff; font-size: 11px; cursor: pointer; text-align: left; }
+.demo__check:hover { background: #33404d; }
+.demo__check[aria-pressed="true"] { background: #fff; color: #1f2933; border-color: #fff; font-weight: 700; }
+.demo__legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: #c9d3dd; }
+.demo__legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.demo__changes { margin-top: 2px; padding-top: 10px; border-top: 1px solid #4b5866; font-size: 11px; line-height: 1.5; color: #c9d3dd; }
+.demo__changes b { color: #fff; }
+body.hl [data-hot], body.hl-flash [data-hot] { outline: 2px solid var(--hot, #14a0f0); outline-offset: 2px; box-shadow: 0 0 0 5px color-mix(in srgb, var(--hot, #14a0f0) 30%, transparent); }
+[data-hot="new"] { --hot: #ff7a00; }
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav__home" href="index.html" data-hot="new" title="Home" aria-label="Vohra, go to home"><img class="nav__logo" src="logo.svg" alt="Vohra"></a>
+  <span class="nav__divider"></span>
+  <a class="nav__back" href="index.html" data-hot="new">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3 5 8l5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to dashboard</a>
+  <span class="nav__spacer"></span>
+  <button class="user" id="userBtn" data-hot="existing" aria-haspopup="true" aria-expanded="true"><span class="user__avatar">JD</span>Jane Doe
+    <svg class="user__chev" width="14" height="7" viewBox="0 0 16 8" fill="none" aria-hidden="true"><path d="m1 1 7 6 7-6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
+
+  <div class="menu" id="menu" role="menu">
+    <a class="menu__item" role="menuitem" id="menuHome" href="index.html" data-hot="new">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z" fill="#006ab5"/></svg>Home</a>
+    <button class="menu__item" role="menuitem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 21h20z" fill="#006ab5"/><path d="M12 10v5M12 17.5v.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Alert settings</button>
+    <button class="menu__item" role="menuitem" aria-current="page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="#006ab5"/></svg>Services docs</button>
+    <button class="menu__logout">Log Out</button>
+  </div>
+</header>
+
+<main class="page" id="app"></main>
+
+<footer class="footer">
+  <span>Privacy Policy | Terms &amp; Conditions</span>
+  <span>© Vohra Wound Physicians 2026, vH5 Medical Documentation and Coding Certification. Version: 1.1.01</span>
+</footer>
+
+<aside class="demo" id="demo" aria-label="Prototype controls">
+  <button class="demo__toggle" id="demoMin" title="Minimise">–</button>
+  <h4>Prototype controls</h4>
+  <p>Not part of the product.</p>
+  <div class="demo__group">
+    <span class="demo__label">Profile menu</span>
+    <div class="demo__seg" data-key="menu"><button data-val="open">Open</button><button data-val="closed">Closed</button></div>
+  </div>
+  <div class="demo__group">
+    <span class="demo__label">Clickable areas</span>
+    <button class="demo__check" id="hlBtn" aria-pressed="false">Show clickable areas</button>
+    <div class="demo__legend"><span><i style="background:#14a0f0"></i>Already exists</span><span><i style="background:#ff7a00"></i>New</span></div>
+    <div class="demo__legend" style="display:block">Or click anywhere on the page to flash them. Items not outlined don't do anything in this prototype.</div>
+  </div>
+  <div class="demo__changes"><b>What changed on this page</b><br>
+    This is a new page, Services docs. It lists 7 service flyers in 3 groups, each with a short summary and a PDF download. Home in the profile menu, Back to dashboard and the logo return to the dashboard.</div>
+</aside>
+
+<script>
+const S = Object.assign({ menu: "open" }, Object.fromEntries(new URLSearchParams(location.search)));
+
+/* ---------- Copy (approved in the copy session; intro: Plain) ---------- */
+const INTRO = "Learn what Vohra can do for your facility. Each service below has a short overview and a flyer you can download, print, or share with your team.";
+
+/* One consistent line icon per service: 24px grid, 1.8 stroke, brand blue. */
+const ic = p => `<svg viewBox="0 0 24 24" fill="none" stroke="#006ab5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  overview: ic(`<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>`),
+  skin: ic(`<path d="M12 3 4.5 6v5.5c0 4.4 3.1 8 7.5 9.5 4.4-1.5 7.5-5.1 7.5-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>`),
+  mist: ic(`<path d="M3 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 13c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>`),
+  imaging: ic(`<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3.5"/>`),
+  pico: ic(`<path d="M12 3.5c3.4 4 6 6.8 6 10.2a6 6 0 0 1-12 0c0-3.4 2.6-6.2 6-10.2z"/><path d="M9.5 14a2.6 2.6 0 0 0 2.5 2.4"/>`),
+  coe: ic(`<circle cx="12" cy="9" r="5.5"/><path d="m9 13.8-1.5 6.7 4.5-2.5 4.5 2.5-1.5-6.7"/><path d="m12 6.5.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z"/>`),
+  cert: ic(`<path d="m2.5 9.5 9.5-5 9.5 5-9.5 5z"/><path d="M6.5 12v4.5c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5V12M21.5 9.5V15"/>`)
+};
+
+const GROUPS = [
+  { title: "Start here", sub: null, one: true, items: [
+    { icon: "overview", title: "Wound care at your facility", file: "vohra-wound-care-overview",
+      text: "See how Vohra clinicians work alongside your team: weekly physician visits at the bedside, documentation that supports your records, wound outcomes reports, and education for your staff. Physician services are billed to insurance or Medicare, not to your facility.",
+      link: "Download overview" } ]},
+  { title: "Clinical services", sub: "Delivered by your Vohra clinicians at your facility.", items: [
+    { icon: "skin", title: "At-risk skin assessments", file: "at-risk-skin-assessments",
+      text: "A proactive service that helps your team catch skin concerns before they become wounds. Your Vohra provider performs a head-to-toe skin exam with your nurse, and the findings are documented in the Vohra EMR. The flyer explains how to prepare.", link: "Download flyer" },
+    { icon: "mist", title: "Ultrasound Mist Therapy", file: "ultrasound-mist-therapy",
+      text: "A non-contact therapy for wounds that have stalled or are too painful to debride. A fine mist delivers low-frequency ultrasound to the wound bed, with little disruption to your daily routine.", link: "Download flyer" },
+    { icon: "imaging", title: "Bacterial fluorescence imaging", file: "bacterial-fluorescence-imaging",
+      text: "Imaging that helps Vohra clinicians detect bacteria in a wound earlier than traditional methods, so infection can be treated sooner. It is recommended for initial assessments, stalled or worsening wounds, and signs of infection.", link: "Download flyer" },
+    { icon: "pico", title: "PICO negative pressure wound therapy", file: "pico-negative-pressure-wound-therapy",
+      text: "A portable, single-use device that removes excess fluid from a wound and helps protect it, applied by your Vohra physician at no cost to your facility. The flyer lists which wounds qualify and how the device is ordered.", link: "Download flyer" } ]},
+  { title: "Recognition and education", sub: "For your facility and your nursing staff.", items: [
+    { icon: "coe", title: "Center of Excellence in wound management", file: "center-of-excellence",
+      text: "A yearly Vohra distinction for facilities with a superior wound management program. Share it on your website, in local news, and on social media to help attract admissions. The flyer lists the criteria and how to apply.", link: "Download flyer" },
+    { icon: "cert", title: "Wound care certification for nurses", file: "wound-care-certification",
+      text: "Online, self-paced education that leads to the Vohra Wound Certified Nurse (VWCN) credential, with continuing education credit. Nurses can enroll on their own, and facilities can enroll their nurses.", link: "Download flyer" } ]}
+];
+
+const HELP = `<b>Questions about a service?</b> Contact Facility Portal support at <a href="mailto:portalsupport@vohraphysicians.com">portalsupport@vohraphysicians.com</a>.`;
+
+
+const dl = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8M4.5 7 8 10.5 11.5 7M2.5 13.5h11" stroke="#006ab5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const mail = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#006ab5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>`;
+const gid = g => "g-" + g.title.replace(/\W/g, "");
+const btn = s => `<a class="btn" href="flyers/${s.file}.pdf" download data-hot="new" aria-label="${s.link}: ${s.title} (PDF)">${dl}${s.link} <span class="btn__type">(PDF)</span></a>`;
+const card = s => `<article class="card"><div class="card__head"><span class="icon">${ICONS[s.icon]}</span><h4 class="card__title">${s.title}</h4></div>
+  <p class="card__text">${s.text}</p>${btn(s)}</article>`;
+const group = g => `<section class="group" id="${gid(g)}" aria-labelledby="${gid(g)}-t"><h3 class="group__title" id="${gid(g)}-t">${g.title}</h3>${g.sub ? `<p class="group__sub">${g.sub}</p>` : ""}<div class="grid ${g.one ? "grid--one" : ""}">${g.items.map(card).join("")}</div></section>`;
+
+function render() {
+  document.getElementById("app").innerHTML = `<h2 class="page__title">Services docs</h2><p class="page__intro">${INTRO}</p>${GROUPS.map(group).join("")}
+    <div class="help">${mail}<div>${HELP.replace("<a ", '<a data-hot="new" ')}</div></div>`;
+  const menu = document.getElementById("menu"), btnU = document.getElementById("userBtn");
+  menu.hidden = S.menu !== "open"; btnU.setAttribute("aria-expanded", S.menu === "open");
+  document.querySelectorAll(".demo__seg button").forEach(b => b.setAttribute("aria-pressed", S.menu === b.dataset.val));
+}
+
+document.querySelector(".demo__seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; S.menu = b.dataset.val; render();
+});
+document.getElementById("userBtn").addEventListener("click", () => { S.menu = S.menu === "open" ? "closed" : "open"; render(); });
+document.getElementById("demoMin").addEventListener("click", () => document.getElementById("demo").classList.toggle("demo--min"));
+
+/* Clickable areas: toggle in the panel keeps them outlined; a click anywhere else flashes them (as in the Figma prototype). */
+const hlBtn = document.getElementById("hlBtn");
+hlBtn.addEventListener("click", () => { const on = !document.body.classList.contains("hl"); document.body.classList.toggle("hl", on); hlBtn.setAttribute("aria-pressed", on); });
+let flashTimer;
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-hot], .demo")) return;
+  document.body.classList.add("hl-flash"); clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => document.body.classList.remove("hl-flash"), 1400);
+});
+render();
+</script>
+</body>
+</html>
