@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>PI On Admission — drill-down popup (V2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --text: #014378; --text-2: #4a627a; --text-3: #7d93a8; --blu: #006ab5;
+  --blue-dar-04: #00508d; --blue-dar-08: #013664; --blue-dar-11: #012246;
+  --blue-ligh-05: #6ba9d7; --blue-ligh-07: #96c4e3; --blue-ligh-08: #abd2eb; --blue-ligh-09: #cae6fc; --blue-ligh-10: #dbf0ff;
+  --blue-ligh-11: #e3f4ff; --blue-ligh-12: #edfaff; --blue-ligh-13: #f5fcff;
+  --line: #d6e6f3; --row: #eef7fd; --row-hover: #e3f1fb;
+  --roboto: "Roboto", sans-serif; --sans: "Open Sans", sans-serif;
+  --cols: minmax(224px,1.4fr) 84px minmax(128px,1.1fr) 92px minmax(150px,1.3fr) 118px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--sans); color: var(--text); background: var(--blue-ligh-13); min-width: 1180px; min-height: 100vh; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+/* ---------- page behind the popup (context only) ---------- */
+.nav { height: 75px; display: flex; align-items: center; gap: 24px; padding: 0 31px 0 27px; background: linear-gradient(90deg, var(--blue-dar-11), var(--blue-dar-08)); color: #fff; }
+.nav img { width: 140px; }
+.nav__divider { width: 1px; height: 40px; background: rgba(255,255,255,.17); }
+.nav h1 { font-family: var(--roboto); font-size: 24px; margin: 0; }
+.band { padding: 19px 40px 18px; background: linear-gradient(180deg, var(--blue-ligh-07), var(--blue-ligh-09)); display: flex; gap: 20px; justify-content: center; }
+.tile { width: 280px; height: 96px; border-radius: 8px; background: linear-gradient(180deg, #559dd0, #80b6dd); border: 1px solid var(--blue-ligh-11); opacity: .8; }
+.stage { display: grid; place-items: center; padding: 60px 0; }
+.open-btn { height: 40px; padding: 0 22px; border-radius: 6px; border: 1px solid var(--blu); background: #fff; color: var(--blu); font-weight: 700; }
+
+/* ---------- popup ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(1,34,70,.55); display: grid; place-items: center; z-index: 20; }
+.scrim[hidden] { display: none; }
+.pop { width: 960px; max-width: calc(100vw - 48px); height: min(846px, calc(100vh - 56px)); background: #fff; border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); display: flex; flex-direction: column; position: relative; }
+.pop__head { flex: none; background: linear-gradient(90deg, var(--blue-dar-11), var(--blue-dar-08)); color: #fff; padding: 20px 36px 20px; border-radius: 16px 16px 0 0; display: flex; gap: 24px; align-items: flex-start; }
+.pop__title { font-family: var(--roboto); font-weight: 500; font-size: 22px; line-height: 26px; margin: 0; }
+.pop__note { margin: 2px 0 0; font-size: 12px; line-height: 16px; max-width: 760px; color: #e8f3fb; }
+.pop__x { margin-left: auto; flex: none; width: 32px; height: 32px; border: none; background: transparent; border-radius: 50%; color: #fff; display: grid; place-items: center; }
+.pop__x:hover { background: rgba(255,255,255,.14); }
+
+/* filter band (only when a filter is on) + toolbar */
+.fband { flex: none; display: flex; align-items: center; gap: 14px; min-height: 40px; padding: 8px 36px; background: var(--blue-ligh-12); border-bottom: 1px solid var(--blue-ligh-10); font-family: var(--roboto); font-size: 12px; }
+.fband[hidden] { display: none; }
+.fbar { flex: none; display: flex; align-items: center; gap: 18px; padding: 14px 36px; font-family: var(--roboto); }
+.status { color: var(--text-2); font-size: 11px; }
+.status b { color: var(--text); font-weight: 700; }
+.status span { color: var(--text-3); font-size: 12px; margin-left: 8px; padding-left: 10px; border-left: 1px solid var(--blue-ligh-08); }
+.seg { margin-left: auto; display: inline-flex; border: 1px solid var(--blue-ligh-08); border-radius: 6px; background: #fff; overflow: hidden; }
+.seg button { border: none; background: transparent; color: var(--blu); font-family: var(--roboto); font-size: 12px; font-weight: 500; padding: 5px 14px; }
+.seg button + button { border-left: 1px solid var(--blue-ligh-09); }
+.seg button:hover { background: var(--blue-ligh-10); }
+.seg button:focus-visible { outline: 2px solid var(--blu); outline-offset: -2px; }
+.flab { flex: none; font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text-3); }
+.chips { flex: 1; display: flex; flex-wrap: wrap; gap: 6px 8px; min-width: 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 24px; max-width: 360px; padding: 0 6px 0 10px; border-radius: 12px; border: none; background: var(--blue-ligh-05); color: white; font-size: 11px; white-space: nowrap; }
+.chip b { font-weight: 700; flex: none; }
+.chip i { font-style: normal; overflow: hidden; text-overflow: ellipsis; }
+.chip button { flex: none; border: none; background: none; padding: 0; width: 16px; height: 16px; display: grid; place-items: center; color: var(--blue-ligh-09); border-radius: 50%; }
+.chip button:hover { background: rgba(255,255,255,.22); }
+.chip--sort { background: transparent; border: 1px dashed var(--text-3); color: var(--text-2); height: 26px; }
+.chip--sort button { color: var(--text-2); }
+.chip--sort button:hover { background: var(--blue-ligh-10); }
+.link { border: none; background: none; padding: 0; color: var(--blu); font-family: var(--roboto); font-size: 12px; white-space: nowrap; height: 24px; }
+.link:hover { text-decoration: underline; }
+.toggle:focus-visible, .hbtn:focus-visible, .more:focus-visible, .link:focus-visible { outline: 2px solid var(--blu); outline-offset: 2px; }
+
+/* table */
+.thead, .grp { display: grid; grid-template-columns: var(--cols); column-gap: 0; }
+.thead { flex: none; margin: 0 36px; padding: 0; position: relative; z-index: 6; border-bottom: 1px solid #dbe8f3; }
+.th { position: relative; display: flex; align-items: center; gap: 2px; height: 38px; font-family: var(--roboto); font-weight: 500; font-size: 13px; color: #6a86a1; }
+.th:first-child { padding-left: 0; }
+.th:nth-child(2) { padding-left: 14px; }
+.hbtn { position: relative; width: 24px; height: 24px; border: none; background: transparent; border-radius: 4px; display: grid; place-items: center; color: #4a9bd8; padding: 0; }
+.hbtn:hover, .hbtn[aria-expanded="true"] { background: var(--blue-ligh-10); color: var(--blu); }
+.hbtn.is-on { background: var(--blue-ligh-09); color: var(--blue-dar-04); }
+.hbtn svg, .toggle svg { display: block; }
+.sortmark { font-size: 10px; color: var(--blu); margin-left: -2px; }
+.body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 36px 18px; border-radius: 0 0 16px 16px; }
+.body::-webkit-scrollbar { width: 8px; } .body::-webkit-scrollbar-thumb { background: var(--blue-ligh-08); border-radius: 4px; }
+
+.grp { border-top: 1px solid #e8f0f7; padding: 3px 0; align-items: start; }
+.grp:first-child { border-top: none; }
+.who { grid-column: 1; display: flex; gap: 10px; align-items: flex-start; padding: 6px 8px 6px 0; min-width: 0; }
+.who__t { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: 22px; }
+.toggle { flex: none; width: 24px; height: 24px; margin-top: 0; border: none; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--blu); transition: background .12s; padding: 0; }
+.toggle:hover { background: var(--blue-ligh-10); }
+.toggle svg { transition: transform .15s; }
+.grp.is-open .toggle svg { transform: rotate(90deg); }
+.toggle[disabled] { background: transparent; color: #c9d4de; cursor: default; }
+.name { display: block; font-weight: 700; font-size: 14px; line-height: 22px; color: var(--blu); background: none; border: none; padding: 0; text-align: left; }
+.name:hover { text-decoration: underline; }
+.who--single .name { cursor: default; } .who--single .name:hover { text-decoration: none; }
+.sub { display: block; white-space: nowrap; font-size: 11px; line-height: 22px; color: var(--text-3); }
+.more { display: inline-flex; align-items: center; height: 18px; padding: 0 9px; border-radius: 10px; border: none; background: var(--blue-ligh-10); color: var(--blu); font-family: var(--roboto); font-size: 11px; font-weight: 500; }
+.grp.is-open .who__t { display: block; }
+.grp.is-open .sub { line-height: 14px; margin-top: 1px; }
+.more:hover { background: var(--blue-ligh-09); }
+.recs { grid-column: 2 / -1; display: grid; grid-template-columns: subgrid; }
+.rec { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; min-height: 32px; font-size: 13px; color: var(--text-2); border-radius: 3px; }
+.rec > span { padding: 0 8px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grp.is-open .rec:nth-child(odd) { background: #f3f9fd; }
+.rec > span:first-child { padding-left: 14px; }
+.rec--pre { background: transparent; }
+.dash { color: #aebfce; }
+.grp.is-collapsed:hover { background: #f3f9fd; }
+.grp.is-collapsed { cursor: pointer; }
+.none-msg { padding: 60px 20px; text-align: center; color: var(--text-2); font-size: 14px; }
+.none-msg b { display: block; font-family: var(--roboto); font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+
+/* column menu (Figma: sort by + filter by) */
+.menu { position: absolute; top: 40px; width: 176px; background: #fff; border: 1px solid var(--blue-ligh-09); border-radius: 6px; box-shadow: 0 4px 16px rgba(1,34,70,.22); font-family: var(--roboto); font-weight: 400; font-size: 12px; color: var(--text-2); z-index: 30; padding: 6px 0 6px; }
+.menu--l { left: 0; } .menu--r { right: 0; }
+.menu h4 { margin: 0; padding: 2px 10px 4px; font-size: 11px; font-weight: 400; color: var(--text-3); display: flex; justify-content: space-between; align-items: center; }
+.opt { display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; text-align: left; padding: 4px 10px; font-size: 12px; color: var(--text-2); }
+.opt:hover { background: var(--blue-ligh-12); }
+.opt.is-sel { background: var(--blue-ligh-10); color: var(--blu); font-weight: 700; }
+.menu hr { border: none; border-top: 1px solid var(--blue-ligh-10); margin: 6px 0; }
+.list { max-height: 176px; overflow-y: auto; }
+.list::-webkit-scrollbar { width: 4px; } .list::-webkit-scrollbar-thumb { background: var(--blue-ligh-08); border-radius: 2px; }
+.cb { width: 12px; height: 12px; border: 1px solid var(--blue-ligh-05); border-radius: 2px; background: #fff; display: grid; place-items: center; flex: none; }
+.opt.is-on { color: var(--blu); }
+.opt.is-on .cb { background: var(--blu); border-color: var(--blu); }
+.opt.is-on .cb::after { content: ""; width: 6px; height: 3px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translate(1px,-1px); }
+.selall { display: inline-flex; align-items: center; gap: 4px; border: none; background: none; padding: 0; font-size: 10px; color: var(--text-2); }
+.selall .cb { width: 10px; height: 10px; }
+.selall.is-on .cb { background: var(--blu); border-color: var(--blu); }
+
+/* prototype note */
+.proto { position: fixed; right: 16px; bottom: 16px; width: 280px; background: #fffbe6; border: 1px solid #ecd98a; border-radius: 4px; padding: 10px 12px; font-size: 11px; line-height: 1.45; color: #5c4b00; box-shadow: 0 2px 8px rgba(0,0,0,.12); z-index: 60; font-family: var(--sans); }
+.proto b.t { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.proto button.mini { border: none; background: none; font-size: 15px; line-height: 1; padding: 0 2px; color: #5c4b00; }
+.proto.is-min .proto__body { display: none; }
+.proto label { display: flex; gap: 6px; align-items: flex-start; margin-top: 5px; }
+.proto input { margin-top: 2px; }
+.proto .g { margin-top: 8px; font-weight: 700; }
+.proto .btns { display: flex; gap: 6px; margin-top: 8px; }
+.proto .btns button { border: 1px solid #c9b45a; background: #fff; border-radius: 3px; font-size: 11px; padding: 3px 8px; color: #5c4b00; }
+</style>
+</head>
+<body>
+<div class="nav"><img src="logo.svg" alt="Vohra"><span class="nav__divider"></span><h1>Clinical Outcomes Dashboard</h1></div>
+<div class="band"><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div></div>
+<div class="stage"><button class="open-btn" id="openBtn">Open PI On Admission</button></div>
+
+<div class="scrim" id="scrim">
+  <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle">
+    <div class="pop__head">
+      <div><h2 class="pop__title" id="popTitle">PI On Admission</h2>
+        <p class="pop__note">Not Indicated means no present-on-admission indication was documented. It is not a determination that the wound was acquired in this facility. This metric reflects physician documentation only.</p></div>
+      <button class="pop__x" id="closeBtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 3l12 12M15 3L3 15" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="fband" id="fband" hidden></div>
+    <div class="fbar" id="fbar"></div>
+    <div class="thead" id="thead"></div>
+    <div class="body" id="body"></div>
+  </div>
+</div>
+
+<div class="proto" id="proto"><b class="t"><span>PI On Admission — V2</span><button class="mini" id="protoMin" aria-label="Collapse note">&minus;</button></b>
+  <div class="proto__body">
+    Option A: each patient appears once. A collapsed row shows the patient's first record and “+N more”.
+    <div class="g">Try</div>
+    Sort a column (the first record follows the sort), filter, then watch the counts. Resident sorts patients; other columns sort wounds inside each patient.
+    <div class="btns"><button id="presetFilters">Load sample filters</button><button id="reset">Reset</button></div>
+  </div>
+</div>
+
+<script>
+/* ---------- sample data (made up) ---------- */
+const SHORT = 'Short-Stay (<100d)', LONG = 'Long-Stay (>100d)';
+const W = (stage, poa, stay, dur) => ({ stage, poa, stay, dur });
+const raw = {
+  'Ava Foster': [W('Stage 1','Yes',SHORT,6),W('Stage 1','Yes',SHORT,6),W('Unstageable / DTI','Yes',LONG,19),W('Stage 2','',SHORT,14),W('Stage 1','Yes',SHORT,6),W('Stage 3','',LONG,47),W('Stage 3','',LONG,47),W('Stage 4','Yes',LONG,127)],
+  'Ella Diaz': [W('Stage 1','',SHORT,6),W('Stage 1','',SHORT,6),W('Unstageable / DTI','Yes',LONG,19),W('Stage 2','Yes',SHORT,14),W('Stage 1','',SHORT,6),W('Stage 3','Yes',LONG,47)],
+  'Grace Sullivan': [W('Stage 2','Yes',SHORT,22),W('Stage 2','',SHORT,22),W('Stage 3','Yes',LONG,61),W('Stage 1','',SHORT,9),W('Unstageable / DTI','',LONG,33)],
+  'Henry Wallace': [W('Stage 3','Yes',LONG,88),W('Stage 1','',LONG,12)],
+  'James Moore': [W('Stage 2','Yes',SHORT,31),W('Stage 2','Yes',SHORT,31),W('Stage 1','',SHORT,8),W('Stage 4','',LONG,140)],
+  'Kevin Nguyen': [W('Stage 1','',SHORT,5),W('Stage 1','',SHORT,5),W('Stage 2','Yes',SHORT,18),W('Stage 3','Yes',LONG,52),W('Stage 3','',LONG,52),W('Unstageable / DTI','',LONG,24),W('Stage 1','Yes',SHORT,7)],
+  'Liam Carter': [W('Stage 2','Yes',LONG,104)],
+  'Mason Evans': [W('Stage 4','Yes',LONG,160),W('Stage 3','Yes',LONG,92),W('Stage 2','',LONG,40),W('Stage 2','',SHORT,17),W('Stage 1','',SHORT,6),W('Stage 1','',SHORT,6),W('Unstageable / DTI','Yes',LONG,15)],
+  'Noah Patel': [W('Stage 1','',SHORT,11),W('Stage 2','Yes',SHORT,26)],
+  'Olivia Brooks': [W('Stage 3','',LONG,73),W('Stage 2','Yes',LONG,73),W('Stage 1','',SHORT,10)],
+  'Sofia Ramirez': [W('Stage 1','Yes',SHORT,13),W('Stage 2','Yes',SHORT,13),W('Stage 2','',SHORT,29),W('Stage 3','',LONG,66),W('Stage 4','Yes',LONG,118),W('Unstageable / DTI','',LONG,21)],
+  'Weston Hayes': [W('Stage 2','Yes',SHORT,35)],
+  'Chloe Bennett': [W('Stage 1','',SHORT,4),W('Stage 3','Yes',LONG,58),W('Stage 2','',SHORT,20)],
+  'Wyatt Coleman': [W('Stage 1','',SHORT,9)]
+};
+const patients = Object.keys(raw).sort((a,b)=>a.localeCompare(b)).map((name,pi)=>({ id:'p'+pi, name, wounds: raw[name].map((w,i)=>({ ...w, site:i+1 })) }));
+const TOTAL_P = patients.length, TOTAL_R = patients.reduce((n,p)=>n+p.wounds.length,0);
+
+const COLS = [
+  { k:'site',  label:'Site',      num:true,  val:w=>w.site,                  show:w=>String(w.site) },
+  { k:'stage', label:'Stage',                val:w=>w.stage,                 show:w=>w.stage },
+  { k:'poa',   label:'POA',                  val:w=>w.poa||'Not indicated',  show:w=>w.poa||'' },
+  { k:'stay',  label:'Stay Type',            val:w=>w.stay,                  show:w=>w.stay },
+  { k:'dur',   label:'Duration',  num:true,  val:w=>w.dur,                   show:w=>'>'+w.dur+'days' }
+];
+const colBy = Object.fromEntries(COLS.map(c=>[c.k,c]));
+const label = (c, v) => c.k==='dur' ? '>'+v+'days' : String(v);
+
+/* ---------- state ---------- */
+const S = { open:new Set(), sort:null, f:{}, resident:new Set(), menu:null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const TRI = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+const FUNNEL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>';
+
+function distinct(c) {
+  const set = new Set(); patients.forEach(p=>p.wounds.forEach(w=>set.add(c.val(w))));
+  return [...set].sort(c.num ? (a,b)=>a-b : (a,b)=>String(a).localeCompare(String(b), undefined, {numeric:true}));
+}
+function cmp(c, a, b) { const x=c.val(a), y=c.val(b); return c.num ? x-y : String(x).localeCompare(String(y), undefined, {numeric:true}); }
+
+function view() {
+  const out = [];
+  patients.forEach(p => {
+    if (S.resident.size && !S.resident.has(p.name)) return;
+    let ws = p.wounds.filter(w => COLS.every(c => !S.f[c.k] || !S.f[c.k].size || S.f[c.k].has(c.val(w))));
+    if (!ws.length) return;
+    const c = S.sort && colBy[S.sort.col];
+    ws = ws.slice().sort((a,b) => (c ? (S.sort.dir==='asc' ? 1 : -1) * cmp(c,a,b) : 0) || a.site - b.site);
+    out.push({ p, ws });
+  });
+  return out;
+}
+
+/* ---------- render ---------- */
+const X = '<svg width="8" height="8" viewBox="0 0 8 8"><path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+function sortText() {
+  if (!S.sort) return '';
+  const c = S.sort.col==='resident' ? { label:'Resident', num:false } : colBy[S.sort.col];
+  const asc = S.sort.dir==='asc';
+  return `${c.label}, ${c.num ? (asc?'low to high':'high to low') : (asc?'A to Z':'Z to A')}`;
+}
+function chipsHtml() {
+  const chips = [];
+  if (S.resident.size) { const v = [...S.resident].join(', '); chips.push(`<span class="chip" title="${esc(v)}"><b>Resident:</b><i>${esc(v)}</i><button data-act="rm-col" data-c="resident" aria-label="Remove Resident filter">${X}</button></span>`); }
+  COLS.forEach(c => { const set = S.f[c.k]; if (!set || !set.size) return; const v = [...set].sort(c.num?(a,b)=>a-b:undefined).map(x=>label(c,x)).join(', '); chips.push(`<span class="chip" title="${esc(v)}"><b>${c.label}:</b><i>${esc(v)}</i><button data-act="rm-col" data-c="${c.k}" aria-label="Remove ${c.label} filter">${X}</button></span>`); });
+  return chips;
+}
+function renderBar(v) {
+  const chips = chipsHtml();
+  const shownR = v.reduce((n,g)=>n+g.ws.length,0);
+  const band = $('fband');
+  band.hidden = !chips.length;
+  band.innerHTML = chips.length ? `<span class="flab">Filtered by</span><div class="chips">${chips.join('')}</div><button class="link" data-act="clear-all">Clear all filters</button>` : '';
+  const sortChip = S.sort ? `<span class="chip chip--sort" title="The first record of a collapsed patient follows this sort"><span class="flab" style="margin-right:2px">Sorted by</span>${sortText()}<button data-act="clear-sort" aria-label="Clear sort">${X}</button></span>` : '';
+  $('fbar').innerHTML = `<div class="status" aria-live="polite">Showing <b>${v.length} of ${TOTAL_P}</b> patients<span>${shownR} of ${TOTAL_R} records</span></div>${sortChip}
+      <div class="seg" role="group" aria-label="Expand or collapse patients"><button data-act="expand-all">Expand all</button><button data-act="collapse-all">Collapse all</button></div>`;
+}
+function menuHtml(k) {
+  const isRes = k==='resident';
+  const c = isRes ? { label:'Resident', num:false } : colBy[k];
+  const vals = isRes ? patients.map(p=>p.name) : distinct(c);
+  const sel = isRes ? S.resident : (S.f[k] || new Set());
+  const asc = c.num ? 'Low to high' : 'A to Z', desc = c.num ? 'High to low' : 'Z to A';
+  const cur = S.sort && S.sort.col===k ? S.sort.dir : null;
+  const side = (k==='stay' || k==='dur') ? 'menu--r' : 'menu--l';
+  const all = sel.size === vals.length;
+  return `<div class="menu ${side}" role="menu" data-menu="${k}">
+    <h4>Sort by</h4>
+    <button class="opt ${cur==='asc'?'is-sel':''}" data-act="sort" data-c="${k}" data-d="asc">${asc}</button>
+    <button class="opt ${cur==='desc'?'is-sel':''}" data-act="sort" data-c="${k}" data-d="desc">${desc}</button>
+    <hr>
+    <h4>Filter by <button class="selall ${all?'is-on':''}" data-act="sel-all" data-c="${k}"><span class="cb"></span>Select all</button></h4>
+    <div class="list">${vals.map(v => `<button class="opt ${sel.has(v)?'is-on':''}" data-act="toggle-f" data-c="${k}" data-v="${esc(v)}"><span class="cb"></span>${esc(isRes ? v : label(c,v))}</button>`).join('')}</div>
+  </div>`;
+}
+function renderHead() {
+  const keep = document.querySelector('.menu .list'); const ls = keep ? keep.scrollTop : 0;
+  const all = [{ k:'resident', label:'Resident', num:false }, ...COLS];
+  $('thead').innerHTML = all.map(c => {
+    const on = c.k==='resident' ? S.resident.size>0 : (S.f[c.k] && S.f[c.k].size>0);
+    const sorted = S.sort && S.sort.col===c.k;
+    const mark = sorted ? `<span class="sortmark" aria-hidden="true">${S.sort.dir==='asc'?'▲':'▼'}</span>` : '';
+    return `<div class="th">${c.label}<button class="hbtn ${on?'is-on':''}" data-act="menu" data-c="${c.k}" aria-label="Sort and filter ${c.label}" aria-haspopup="true" aria-expanded="${S.menu===c.k}">${FUNNEL}</button>${mark}${S.menu===c.k ? menuHtml(c.k) : ''}</div>`;
+  }).join('');
+  const l = document.querySelector('.menu .list'); if (l) l.scrollTop = ls;
+}
+function recRow(w, cls='') {
+  return `<div class="rec ${cls}">${COLS.map(c => { const t = c.show(w); return `<span>${t || '<span class="dash">—</span>'}</span>`; }).join('')}</div>`;
+}
+function renderBody() {
+  const body = $('body'); const top = body.scrollTop;
+  const v = view();
+  renderBar(v);
+  if (!v.length) { body.innerHTML = '<div class="none-msg"><b>No patients match these filters.</b>Remove a filter or <button class="link" data-act="clear-all">clear all filters</button> to see them again.</div>'; return; }
+  body.innerHTML = v.map(({p, ws}) => {
+    const n = ws.length, total = p.wounds.length, single = total === 1;
+    const open = !single && S.open.has(p.id);
+    const subText = single ? '1 record' : (n < total ? `${n} of ${total} records` : `${total} records`);
+    const showMore = !open && n > 1;
+    const tg = single
+      ? `<button class="toggle" disabled aria-label="Only one record">${TRI}</button>`
+      : `<button class="toggle" data-act="toggle" data-p="${p.id}" aria-expanded="${open}" aria-label="${open?'Collapse':'Expand'} ${esc(p.name)}">${TRI}</button>`;
+    const nameEl = single ? `<span class="name">${esc(p.name)}</span>` : `<button class="name" data-act="toggle" data-p="${p.id}" tabindex="-1">${esc(p.name)}</button>`;
+    const who = `<div class="who ${single?'who--single':''}">${tg}<div class="who__t">${nameEl}${showMore ? `<button class="more" data-act="toggle" data-p="${p.id}" aria-label="Show ${n-1} more records for ${esc(p.name)}">+${n-1} more</button>` : `<span class="sub">${subText}</span>`}</div></div>`;
+    let recs;
+    if (open || single) recs = ws.map(w => recRow(w)).join('');
+    else recs = recRow(ws[0], 'rec--pre');
+    return `<div class="grp ${open?'is-open':'is-collapsed'}" data-p="${p.id}" ${open||single?'':`data-act="toggle-row"`}>${who}<div class="recs">${recs}</div></div>`;
+  }).join('');
+  body.scrollTop = top;
+}
+function render() { renderHead(); renderBody(); }
+
+/* ---------- events ---------- */
+function setIn(set, v) { set.has(v) ? set.delete(v) : set.add(v); }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (!e.target.closest('.menu') && !e.target.closest('[data-act="menu"]') && S.menu) { S.menu = null; renderHead(); if (!t) return; }
+  if (!t) return;
+  const a = t.dataset.act, c = t.dataset.c, v = t.dataset.v;
+  const numv = c && colBy[c] && colBy[c].num ? Number(v) : v;
+  if (a==='toggle' || a==='toggle-row') { const id = t.dataset.p; if (a==='toggle-row' && e.target.closest('[data-act="toggle"]')) return; setIn(S.open, id); renderBody(); }
+  else if (a==='expand-all') { view().forEach(g => g.p.wounds.length>1 && S.open.add(g.p.id)); renderBody(); }
+  else if (a==='collapse-all') { S.open.clear(); renderBody(); }
+  else if (a==='menu') { S.menu = S.menu===c ? null : c; renderHead(); }
+  else if (a==='sort') { const same = S.sort && S.sort.col===c && S.sort.dir===t.dataset.d; S.sort = same ? null : { col:c, dir:t.dataset.d }; render(); }
+  else if (a==='clear-sort') { S.sort = null; render(); }
+  else if (a==='toggle-f') { if (c==='resident') setIn(S.resident, v); else { S.f[c] = S.f[c] || new Set(); setIn(S.f[c], numv); } render(); }
+  else if (a==='sel-all') { const vals = c==='resident' ? patients.map(p=>p.name) : distinct(colBy[c]); const cur = c==='resident' ? S.resident : (S.f[c] = S.f[c] || new Set()); const full = cur.size===vals.length; cur.clear(); if (!full) vals.forEach(x=>cur.add(x)); render(); }
+  else if (a==='rm-col') { if (c==='resident') S.resident.clear(); else delete S.f[c]; render(); }
+  else if (a==='clear-all') { S.f = {}; S.resident.clear(); render(); }
+});
+document.addEventListener('keydown', e => { if (e.key==='Escape') { if (S.menu) { S.menu = null; renderHead(); } else if (!$('scrim').hidden) closePop(); } });
+function closePop() { $('scrim').hidden = true; $('openBtn').focus(); }
+$('closeBtn').onclick = closePop;
+$('openBtn').onclick = () => { $('scrim').hidden = false; };
+$('reset').onclick = () => { S.open.clear(); S.sort = null; S.f = {}; S.resident.clear(); S.menu = null; render(); };
+$('presetFilters').onclick = () => { S.f = { stage:new Set(['Stage 2','Stage 3']), poa:new Set(['Yes']) }; S.menu = null; render(); };
+$('protoMin').onclick = () => { const p = $('proto'); p.classList.toggle('is-min'); $('protoMin').innerHTML = p.classList.contains('is-min') ? '+' : '&minus;'; };
+render();
+</script>
+</body>
+</html>
