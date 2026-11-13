@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mobile App · Rounds Sheets page · V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #006AB5; --blue-ink: #004983;
+    --blue-l10: #DBF0FF; --blue-l11: #E3F4FF; --blue-l12: #EDFAFF; --blue-l13: #F5FCFF; --blue-l14: #FAFDFF;
+    --link: #6764CC; --link-dark: #393596; --link-l01: #A7A5E3; --link-l03: #E6E6FA;
+    --text: #4A627A; --text-muted: #607280;
+    --red: #EC3232;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Nunito', -apple-system, system-ui, sans-serif; background: #34495E; color: #fff; }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ---------- Prototype panel (outside the phone) ---------- */
+  .stage { max-width: 960px; margin: 0 auto; padding: 32px 24px; display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  .side { flex: 1; min-width: 300px; max-width: 460px; }
+  .side h1 { font-size: 24px; margin: 0 0 6px; font-weight: 800; }
+  .side > p { margin: 0 0 16px; color: #C9D6E2; font-size: 15px; line-height: 1.45; }
+  .side section { background: #2A3B4C; border-radius: 14px; padding: 14px 18px; margin-bottom: 14px; }
+  .side h3 { margin: 0 0 8px; font-size: 15px; font-weight: 800; }
+  .side ul { margin: 0; padding-left: 18px; color: #DCE6EF; font-size: 14px; line-height: 1.5; }
+  .side li { margin-bottom: 6px; }
+  .side p.note { margin: 0; color: #DCE6EF; font-size: 14px; line-height: 1.45; }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seg button { border: 1px solid #5B7085; background: transparent; color: #fff; padding: 8px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .seg button:hover { border-color: #fff; }
+  .seg button.on { background: #fff; color: #1F2F3F; border-color: #fff; }
+  .toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .toggle input { width: 18px; height: 18px; accent-color: #ff7a00; }
+  .legend { margin-top: 8px; font-size: 13px; color: #C9D6E2; line-height: 1.4; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border: 2px solid #ff7a00; border-radius: 3px; vertical-align: -2px; margin-right: 4px; }
+
+  /* Clickable areas: orange = new (this whole page is new) */
+  body.show-hot [data-hot], body.flash [data-hot] { outline: 2px solid #ff7a00; outline-offset: -2px; }
+  body.show-hot .radio[data-hot], body.flash .radio[data-hot] { outline-offset: -3px; }
+
+  /* ---------- Phone ---------- */
+  .phone { -webkit-tap-highlight-color: transparent; position: relative; flex: none; width: 393px; height: 852px; border-radius: 48px; overflow: hidden;
+    background: linear-gradient(135deg, #013A6F 0%, #006AB5 70%, #0A78C2 100%);
+    box-shadow: 0 0 0 10px #10161C, 0 24px 60px rgba(0,0,0,.45); color: var(--text); user-select: none; }
+  .status-bar { position: absolute; top: 0; left: 0; right: 0; height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0; color: #fff; font-size: 15px; font-weight: 700; }
+  .status-bar .sb-icons { display: flex; gap: 6px; align-items: center; }
+  .app-header { position: absolute; top: 48px; left: 0; right: 0; height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 12px; color: #fff; }
+  .app-header h1 { margin: 0; font-size: 26px; font-weight: 400; letter-spacing: 0.03em; }
+  .sheet-area { position: absolute; top: 100px; bottom: 84px; left: 0; right: 0; background: var(--blue-l11); border-radius: 28px 28px 0 0; overflow: hidden; display: flex; flex-direction: column; }
+  .scroll { position: relative; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 12px 24px; scrollbar-width: none; touch-action: pan-y; }
+  .scroll::-webkit-scrollbar { display: none; }
+  .bottom-nav { position: absolute; left: 0; right: 0; bottom: 0; height: 84px; background: var(--blue-l13); box-shadow: 0 -2px 12px rgba(0,106,181,.12); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 8px; }
+  .nav-item { width: 76px; white-space: nowrap; text-align: center; color: var(--link); font-size: 12px; font-weight: 600; position: relative; }
+  .nav-item .ic { width: 44px; height: 40px; margin: 0 auto 2px; display: flex; align-items: center; justify-content: center; border-radius: 22px; }
+  .nav-item.active { color: var(--blue); }
+  .nav-item.active .ic { background: var(--blue-l10); }
+  .nav-badge { position: absolute; top: -2px; left: 42px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; border-radius: 10px; padding: 2px 5px; line-height: 1.2; }
+
+  /* ---------- Page content ---------- */
+  .sec-title { font-size: 16px; font-weight: 800; color: var(--blue-ink); margin: 22px 4px 8px; }
+  .ico-ext { color: var(--link); display: inline-flex; flex: none; }
+  .ctx { margin: 14px 4px 0; min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ctx small { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: .03em; }
+  .ctx b { display: block; font-size: 19px; font-weight: 800; color: var(--blue); line-height: 1.2; }
+  .link-btn { border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 700; min-height: 48px; padding: 0 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; margin-right: -10px; }
+  .link-btn:active { background: var(--link-l03); }
+  .picker-btn { width: 100%; min-height: 56px; border: 1.5px solid var(--link-l01); border-radius: 16px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 17px; font-weight: 800; color: var(--link-dark); text-align: left; }
+  .picker-btn:active { background: var(--link-l03); }
+  .picker-btn small { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+  .hint { font-size: 14px; color: var(--text-muted); margin: 8px 4px 0; line-height: 1.4; }
+  .locked { opacity: .42; pointer-events: none; }
+
+  .pill-group { display: flex; background: var(--blue-l12); border-radius: 24px; padding: 4px; gap: 4px; margin-top: 14px; }
+  .pill-group button { flex: 1; min-height: 44px; border: 0; border-radius: 20px; background: transparent; font-size: 15px; font-weight: 700; color: var(--link); padding: 0 4px; line-height: 1.1; }
+  .pill-group button:active { background: rgba(255,255,255,.6); }
+  .pill-group button.sel { background: #fff; color: var(--blue-ink); box-shadow: 0 1px 4px rgba(0,70,126,.18); }
+  .btn { width: 100%; min-height: 52px; margin-top: 8px; border-radius: 26px; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--link); background: var(--link); color: #fff; }
+  .btn:active { background: #5653B8; }
+  .radio-list { background: var(--blue-l13); border-radius: 14px; overflow: hidden; }
+  .radio { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; border: 0; background: transparent; padding: 0 14px; text-align: left; font-size: 16px; font-weight: 600; color: var(--text); border-top: 1px solid var(--blue-l10); }
+  .radio:first-child { border-top: 0; }
+  .radio:active { background: var(--blue-l11); }
+  .radio .dot { width: 22px; height: 22px; border-radius: 11px; border: 2px solid var(--link-l01); flex: none; background: #fff; }
+  .radio.sel { color: var(--link-dark); font-weight: 800; }
+  .radio.sel .dot { border-color: var(--link); box-shadow: inset 0 0 0 5px var(--link); }
+  .actionbar { flex: none; background: var(--blue-l14); border-top: 1px solid var(--link-l03); padding: 10px 14px 12px; box-shadow: 0 -4px 12px rgba(0,106,181,.08); }
+  .actionbar .sum { font-size: 14px; color: var(--text-muted); text-align: center; line-height: 1.3; }
+  .actionbar .sum b { color: var(--blue-ink); font-weight: 800; }
+
+  /* ---------- Facility picker + PDF ---------- */
+  .scrim { position: absolute; inset: 0; background: rgba(0,25,50,.35); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+  .phone.sheet-open .scrim { opacity: 1; pointer-events: auto; }
+  .bsheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; background: #fff; border-radius: 24px 24px 0 0; transform: translateY(105%); transition: transform .25s ease; display: flex; flex-direction: column; color: var(--text); max-height: 80%; }
+  .bsheet.open { transform: translateY(0); }
+  .grab { width: 40px; height: 5px; border-radius: 3px; background: #CBD7E2; margin: 8px auto 0; flex: none; }
+  .bs-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 0 20px; }
+  .bs-head h2 { margin: 0; font-size: 20px; font-weight: 800; color: var(--blue-ink); }
+  .icon-btn { width: 48px; height: 48px; border-radius: 24px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; color: var(--link); }
+  .icon-btn:active { background: var(--link-l03); }
+  .bs-body { overflow-y: auto; padding: 4px 12px 24px; scrollbar-width: none; }
+  .bs-body::-webkit-scrollbar { display: none; }
+  .fopt { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; border: 0; background: transparent; text-align: left; padding: 6px 12px; border-radius: 12px; font-size: 17px; font-weight: 700; color: var(--blue); }
+  .fopt:active { background: var(--blue-l12); }
+  .fopt small { display: block; font-size: 13px; font-weight: 600; color: #0B6B3A; }
+  .pdf { position: absolute; inset: 0; z-index: 30; background: #E9EEF3; display: none; flex-direction: column; }
+  .pdf.open { display: flex; }
+  .pdf-bar { flex: none; height: 92px; padding: 48px 8px 0; display: flex; align-items: center; background: var(--blue); color: #fff; }
+  .pdf-bar .back { height: 44px; min-width: 48px; border: 0; background: transparent; color: #fff; display: flex; align-items: center; font-size: 16px; font-weight: 700; }
+  .pdf-bar .t { flex: 1; text-align: center; font-size: 16px; font-weight: 700; margin-right: 48px; }
+  .paper { margin: 16px; background: #fff; border-radius: 4px; flex: 1; padding: 20px 18px; box-shadow: 0 2px 10px rgba(0,0,0,.15); color: #2A3B4C; overflow: hidden; }
+  .paper h4 { margin: 0; font-size: 18px; color: var(--blue-ink); }
+  .paper p { margin: 2px 0 14px; font-size: 13px; color: var(--text-muted); }
+  .paper i { display: block; height: 9px; border-radius: 3px; background: #E3EAF1; margin-bottom: 11px; }
+  .pdf-note { text-align: center; font-size: 12px; color: var(--text-muted); padding: 0 0 22px; }
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <div class="phone" id="phone"></div>
+
+  <aside class="side">
+    <h1>Rounds Sheets page</h1>
+    <p>Mobile App · one page to open any Rounds Sheet or Post Rounds Sheet as a PDF. Header and bottom nav are as in the app today; only the content area is new.</p>
+
+    <section>
+      <h3>Prototype controls</h3>
+      <div class="seg" id="facSeg">
+        <button data-fac="known">Facility known<br><span style="font-weight:500;font-size:12px">(from Facility Detail)</span></button>
+        <button data-fac="pick">Facility not known<br><span style="font-weight:500;font-size:12px">(from a facility list)</span></button>
+      </div>
+      <label class="toggle" style="margin-top:12px"><input type="checkbox" id="hotToggle"> Show clickable areas</label>
+      <div class="legend"><i></i>Orange = new. Anything not outlined does nothing in this prototype. Tap a dead spot on the phone to flash the clickable areas.</div>
+    </section>
+  </aside>
+</main>
+
+<script>
+const I = {
+  back: '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  right: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  close: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  ext: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+  navPin: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-7.6-7-12a7 7 0 0 1 14 0c0 4.4-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  navBox: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+  navHome: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>',
+  navMail: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
+  navMenu: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  sig: '<svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>',
+  batt: '<svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="0.5" width="22" height="11" rx="3" fill="none" stroke="#fff" opacity=".6"/><rect x="2" y="2" width="19" height="8" rx="2" fill="#fff"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#fff" opacity=".6"/></svg>'
+};
+
+const FACILITIES = ['Brookhaven Care Center','Ashford Gardens','Cedar Point Rehab','Dunmore Health & Rehab','Elm Ridge Nursing','Fairview Manor','Glenwood Skilled Nursing','Harbor View Care','Ivy Hill Rehab','Juniper Court','Kingsley Park SNF','Lakeside Commons','Maple Crest Care','Northgate Health','Oakmont Terrace'];
+const CHECKED_IN = 'Ashford Gardens';
+const PATIENTS = { all: 'All patients', multi: 'Multi-Visit patients' };
+const RS_SORT  = { room: 'Room #', name: 'Name (A–Z)' };
+const PRS_SORT = { dos: 'Date of Service', room: 'Room #', name: 'Name (A–Z)' };
+
+const S = { fac: 'known', chosen: null, doc: 'rs', rsPat: 'all', rsSort: 'room', prsSort: 'dos' };
+const phone = document.getElementById('phone');
+const facility = () => S.fac === 'known' ? 'Brookhaven Care Center' : S.chosen;
+const H = 'data-hot="new"';
+
+function ctxHTML() {
+  if (S.fac === 'known') return `<div class="ctx"><div><small>FACILITY</small><b>Brookhaven Care Center</b></div></div>`;
+  if (!S.chosen) return `<div class="ctx" style="margin-top:16px"><button class="picker-btn" ${H} data-action="pick"><span><small>FACILITY</small>Choose a facility</span>${I.right}</button></div>
+    <div class="hint">Rounds Sheets are made per facility. Choose one to see the documents.</div>`;
+  return `<div class="ctx"><div><small>FACILITY</small><b>${S.chosen}</b></div><button class="link-btn" ${H} data-action="pick">Change</button></div>`;
+}
+
+function body() {
+  const radios = (name, opts, cur) => `<div class="radio-list">${Object.keys(opts).map(k => `<button class="radio ${cur === k ? 'sel' : ''}" ${H} data-set="${name}|${k}"><span class="dot"></span>${opts[k]}</button>`).join('')}</div>`;
+  const docPills = `<div class="pill-group">
+      <button ${H} data-set="doc|rs" class="${S.doc === 'rs' ? 'sel' : ''}">Rounds Sheet</button>
+      <button ${H} data-set="doc|prs" class="${S.doc === 'prs' ? 'sel' : ''}">Post Rounds Sheet</button></div>`;
+  const settings = S.doc === 'rs'
+    ? `<div class="sec-title">Patients</div>${radios('rsPat', PATIENTS, S.rsPat)}
+       <div class="sec-title">Sort by</div>${radios('rsSort', RS_SORT, S.rsSort)}`
+    : `<div class="sec-title">Sort by</div>${radios('prsSort', PRS_SORT, S.prsSort)}`;
+  return docPills + settings;
+}
+
+function summary() {
+  return S.doc === 'rs' ? `${PATIENTS[S.rsPat]} · sorted by ${RS_SORT[S.rsSort]}` : `Sorted by ${PRS_SORT[S.prsSort]}`;
+}
+
+function actionbar() {
+  const name = S.doc === 'rs' ? 'Rounds Sheet' : 'Post Rounds Sheet';
+  return `<div class="actionbar"><div class="sum"><b>${name}</b><br>${summary()}</div>
+    <button class="btn" ${H} data-open="${name}|${summary()}">Open PDF ${I.ext.replace('currentColor', '#fff')}</button></div>`;
+}
+
+function render() {
+  const locked = S.fac === 'pick' && !S.chosen;
+  phone.innerHTML = `
+    <div class="status-bar"><span>9:41</span><span class="sb-icons">${I.sig}${I.batt}</span></div>
+    <div class="app-header">${I.back}<h1>Rounds Sheets</h1></div>
+    <div class="sheet-area"><div class="scroll">${ctxHTML()}<div class="${locked ? 'locked' : ''}" ${locked ? 'aria-disabled="true"' : ''}>${body()}</div></div>${locked ? '' : actionbar()}</div>
+    <nav class="bottom-nav">
+      <div class="nav-item"><div class="ic">${I.navPin}</div>Check-In</div>
+      <div class="nav-item"><div class="ic">${I.navBox}</div>Order Supplies</div>
+      <div class="nav-item active"><div class="ic">${I.navHome}</div>Home</div>
+      <div class="nav-item"><div class="ic">${I.navMail}</div>Messages<span class="nav-badge">03</span></div>
+      <div class="nav-item"><div class="ic">${I.navMenu}</div>Other</div></nav>
+    <div class="scrim" data-action="close"></div>
+    <div class="bsheet" id="fsheet"><div class="grab"></div>
+      <div class="bs-head"><h2>Choose a facility</h2><button class="icon-btn" ${H} data-action="close" aria-label="Close">${I.close}</button></div>
+      <div class="bs-body">${[CHECKED_IN, ...FACILITIES.filter(f => f !== CHECKED_IN)].map((f, i) =>
+        `<button class="fopt" ${H} data-fac-choose="${f}"><span>${f}${i === 0 ? '<small>Checked in</small>' : ''}</span></button>`).join('')}</div></div>
+    <div class="pdf" id="pdf"><div class="pdf-bar"><button class="back" ${H} data-action="back">${I.back}Back</button><div class="t" id="pdfT"></div></div>
+      <div class="paper" id="paper"></div><div class="pdf-note">PDF in the in-app browser · Back returns to Rounds Sheets</div></div>`;
+  document.querySelectorAll('[data-fac]').forEach(b => b.classList.toggle('on', b.dataset.fac === S.fac));
+  history.replaceState(null, '', `#fac=${S.fac}`);
+}
+
+function openPdf(v) {
+  const [doc, parts] = v.split('|');
+  document.getElementById('pdfT').textContent = doc;
+  document.getElementById('paper').innerHTML = `<h4>${doc}</h4><p>${facility()}<br>${parts}</p>` + '<i style="width:100%"></i>'.repeat(3) + '<i style="width:84%"></i><i style="width:92%"></i><i style="width:70%"></i>'.repeat(3);
+  document.getElementById('pdf').classList.add('open');
+}
+function closeSheet() { phone.classList.remove('sheet-open'); document.getElementById('fsheet').classList.remove('open'); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (e.target.classList.contains('scrim')) { closeSheet(); return; }
+  if (t && t.dataset.fac) { S.fac = t.dataset.fac; S.chosen = null; render(); return; }
+  if (!t || !phone.contains(t)) {
+    if (phone.contains(e.target)) flash();
+    return;
+  }
+  if (t.dataset.set) { const [k, v] = t.dataset.set.split('|'); S[k] = v; render(); }
+  else if (t.dataset.open) openPdf(t.dataset.open);
+  else if (t.dataset.action === 'pick') { phone.classList.add('sheet-open'); document.getElementById('fsheet').classList.add('open'); }
+  else if (t.dataset.action === 'close') closeSheet();
+  else if (t.dataset.action === 'back') document.getElementById('pdf').classList.remove('open');
+  else if (t.dataset.facChoose) { S.chosen = t.dataset.facChoose; closeSheet(); render(); }
+  else flash();
+});
+
+let flashTimer;
+function flash() {
+  document.body.classList.add('flash');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => document.body.classList.remove('flash'), 700);
+}
+document.getElementById('hotToggle').addEventListener('change', e => document.body.classList.toggle('show-hot', e.target.checked));
+
+const h = new URLSearchParams(location.hash.slice(1));
+if (h.get('fac')) S.fac = h.get('fac');
+if (h.get('chosen')) S.chosen = h.get('chosen');
+if (h.get('doc')) S.doc = h.get('doc');
+render();
+</script>
+</body>
+</html>
