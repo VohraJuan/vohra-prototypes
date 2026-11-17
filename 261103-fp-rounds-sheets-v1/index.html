@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Rounds Sheets · Facility Portal · V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #356AB5; --blue-dark: #254A87; --blue-stripe: #418AC8; --blue-ink: #0B4F86;
+    --page: #EFF6FC; --tab-off: #DEE8F2; --orange: #F2A400;
+    --text: #1B2B3C; --muted: #55677A; --line: #C9D6E4;
+    --cond: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    --sans: 'Open Sans', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: var(--sans); font-size: 13px; color: var(--text); background: var(--page); min-width: 1440px; }
+  body.locked { overflow: hidden; }
+  button { font-family: inherit; cursor: pointer; }
+  a { color: var(--blue); text-decoration: none; }
+
+  /* ---------- Top nav ---------- */
+  .nav { height: 51px; background: var(--blue-dark); border-top: 3px solid var(--blue-stripe); display: flex; align-items: center; padding: 0 10px 0 6px; color: #fff; font-family: var(--cond); font-size: 15px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .nav img { height: 26px; display: block; margin-right: 38px; }
+  .nav .item { margin-right: 22px; padding: 4px 0 3px; display: flex; align-items: center; gap: 5px; border-bottom: 2px solid transparent; }
+  .nav .item.on { border-bottom-color: #fff; }
+  .nav .sel { margin-left: 20px; width: 284px; height: 26px; background: #fff; color: var(--text); font-family: var(--sans); font-size: 13px; letter-spacing: 0; text-transform: none; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; border-radius: 2px; }
+  .nav .sel svg { color: var(--blue); }
+  .nav .find { margin-left: 28px; display: flex; align-items: center; gap: 6px; }
+  .nav .user { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+
+  /* ---------- Layout ---------- */
+  .page { padding: 12px 24px 0; }
+  .cols { display: grid; grid-template-columns: 340px 1fr 340px; gap: 10px; align-items: stretch; }
+  .cols > .card { margin-top: 0 !important; }
+  .card { background: #fff; box-shadow: 0 1px 4px rgba(0,50,100,.18); }
+  .card + .card { margin-top: 14px; }
+  .card > h3 { margin: 0; background: var(--blue); color: #fff; font-family: var(--cond); font-weight: 700; font-size: 17px; letter-spacing: .05em; padding: 8px 16px; }
+  .card .pad { padding: 12px 16px; line-height: 1.4; }
+
+  /* Summary */
+  .pill { display: inline-block; min-width: 32px; text-align: center; background: #8EA0B4; color: #fff; border-radius: 10px; padding: 0 6px; font-size: 12px; margin-right: 8px; line-height: 17px; }
+  .stats { margin: 22px 0 10px; line-height: 1.5; }
+  .stats div { display: flex; align-items: center; height: 19px; }
+  .card .tasks { font-size: 17px; margin: 18px 0 4px; }
+  .lnk { display: block; color: var(--blue); margin: 3px 0; }
+
+  /* Ad card */
+  .ad { margin-bottom: 14px; background: var(--blue); color: #fff; text-align: center; box-shadow: 0 1px 4px rgba(0,50,100,.18); overflow: hidden; }
+  .ad h4 { margin: 0; padding: 12px 10px 0; font-family: var(--cond); font-size: 18px; letter-spacing: .04em; font-weight: 700; }
+  .ad p { margin: 0; font-family: var(--cond); font-size: 15px; letter-spacing: .04em; }
+  .ad .open { display: inline-block; margin: 12px 0 8px; border: 0; background: #fff; color: var(--blue); font-family: var(--cond); font-size: 14px; letter-spacing: .08em; padding: 3px 12px; }
+  .ad img { display: block; width: 100%; height: auto; }
+
+  /* Predictive / VisualDX */
+  .btn-o { display: inline-block; border: 0; background: var(--orange); color: #fff; font-family: var(--cond); font-weight: 700; letter-spacing: .08em; font-size: 14px; height: 26px; padding: 0 12px; margin-top: 10px; }
+  .search { display: flex; margin-top: 8px; }
+  .search .in { flex: 1; height: 26px; border: 1px solid var(--line); color: #9AA9B9; padding: 0 8px; display: flex; align-items: center; font-size: 12px; }
+  .search .go { width: 32px; height: 26px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; }
+
+  /* Visit list */
+  .vl { min-height: 0; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--tab-off); font-family: var(--cond); font-size: 14px; letter-spacing: .02em; text-transform: uppercase; color: #6A829B; text-align: center; }
+  .tabs div { padding: 13px 0; position: relative; }
+  .tabs .on { background: #fff; color: var(--blue); font-weight: 700; }
+  .tabs .badge { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; border-radius: 9px; background: var(--orange); color: #fff; font-family: var(--sans); font-size: 10px; letter-spacing: 0; line-height: 17px; font-weight: 700; }
+  .tool { display: flex; align-items: center; gap: 8px; padding: 17px 16px 0; white-space: nowrap; font-size: 12px; }
+  .tool .lbl { margin-right: 2px; }
+  .sel2 { border: 1px solid var(--line); background: #fff; height: 26px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text); }
+  .sel2 svg { color: var(--blue); }
+  .fp-b { flex: none; height: 26px; padding: 0 11px; border: 0; background: var(--blue); color: #fff; font-family: var(--cond); font-size: 14px; letter-spacing: .08em; border-radius: 2px; }
+  .fp-b:hover { background: #2A5594; }
+  .fp-b.o { background: var(--orange); } .fp-b.o:hover { background: #D99400; }
+  .tbl { margin: 18px 16px 16px 16px; font-size: 12px; }
+  .meta { display: flex; align-items: center; color: #55677A; }
+  .meta .pg { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .meta .pg b { font-weight: 400; display: inline-block; width: 26px; height: 24px; border: 1px solid var(--line); text-align: center; line-height: 22px; background: #fff; }
+  .tr { display: grid; grid-template-columns: 22px 1fr 76px 78px 78px 52px 72px; align-items: center; padding: 8px 0; gap: 4px; }
+  .tr.h { margin-top: 12px; border-bottom: 1.5px solid var(--blue); color: var(--blue); font-weight: 700; }
+  .tr + .tr { border-bottom: 1px solid #DDE6EF; }
+  .cb { width: 12px; height: 12px; border: 1px solid #9DB0C3; background: #fff; }
+  .vn { font-size: 9px; border: 1px solid var(--blue); color: var(--blue); padding: 1px 6px; border-radius: 3px; display: inline-block; }
+
+  /* Referral */
+  .drop { border: 2px dashed #3A7BC2; height: 122px; text-align: center; font-size: 12px; padding-top: 14px; font-weight: 600; margin: 8px 0 14px; background: #F4F8FC; }
+  .drop svg { display: block; margin: 0 auto 8px; }
+  .drop span { font-weight: 400; display: block; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .fld label { display: block; font-size: 11px; color: var(--muted); margin: 8px 0 3px; }
+  .fld label i { color: #D12C2C; font-style: normal; }
+  .fld div { height: 24px; border: 1px solid #C3D2E2; background: #F7FAFD; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .fld div svg { color: var(--blue); }
+  .refbtns { display: flex; justify-content: center; gap: 12px; margin: 18px 0 18px; }
+  .ghost { display: block; margin: 8px auto 4px; width: 178px; height: 26px; background: #fff; border: 1px solid var(--blue); color: var(--blue); font-family: var(--cond); font-size: 14px; letter-spacing: .06em; border-radius: 2px; }
+
+  /* End points */
+  .ep { margin-top: 14px; }
+  .ep > h3 { text-align: center; padding: 5px 16px 3px; font-size: 16px; letter-spacing: .06em; text-transform: uppercase; }
+  .ep > h3 small { display: block; font-family: var(--sans); font-weight: 600; font-size: 11.5px; letter-spacing: 0; text-transform: none; }
+  .ep-body { padding: 18px 28px 30px; display: grid; grid-template-columns: 400px 1fr; gap: 20px; }
+  .ep-year { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .ep-year .sel2 { width: 160px; white-space: nowrap; font-size: 13px; }
+  .eptable { box-shadow: 0 1px 5px rgba(0,50,100,.2); font-size: 12px; align-self: start; }
+  .eprow { display: grid; grid-template-columns: 1fr 84px 54px; padding: 8px 8px; border-top: 1px solid #E3EBF3; align-items: center; gap: 6px; }
+  .eprow.h { color: var(--blue); font-size: 13px; border-top: 0; border-bottom: 2px solid var(--blue); padding-top: 9px; }
+  .eprow .n { display: flex; align-items: center; gap: 8px; } .eprow .n i { width: 8px; height: 8px; border-radius: 4px; flex: none; }
+  .eprow .c { color: var(--blue); }
+  .eprow.t { font-weight: 700; border-top: 2px solid #E3EBF3; }
+  #donut { width: 100%; max-width: 780px; height: auto; display: block; margin: 0 auto; }
+  #donut text { font-family: Arial, sans-serif; font-size: 10.5px; fill: #111; }
+
+  /* Footer + chat */
+  .foot { margin-top: 40px; height: 48px; background: var(--blue); color: #fff; font-size: 11px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; }
+  .foot a { color: #fff; text-decoration: underline; }
+  .chat { position: fixed; right: 20px; bottom: 14px; display: flex; align-items: center; gap: 10px; z-index: 5; }
+  .chat .pill2 { background: #fff; box-shadow: 0 1px 8px rgba(0,0,0,.2); border-radius: 10px; padding: 9px 14px; font-family: Arial, sans-serif; font-size: 14px; }
+  .chat .dot { width: 46px; height: 46px; border-radius: 23px; background: #1A44D8; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+
+  /* ---------- Rounds Sheets modal ---------- */
+  .backdrop { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: linear-gradient(to bottom, rgba(0,70,126,.94) 0%, rgba(0,70,126,.94) 1%, rgba(1,34,70,.95) 100%); }
+  .backdrop.open { display: flex; }
+  .wm { width: 520px; background: #fff; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,.35); color: #33475B; display: flex; flex-direction: column; font-family: var(--sans); }
+  .wm-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 12px 12px 22px; border-bottom: 1px solid #E1E8EF; }
+  .wm-head h2 { font-family: var(--cond); margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .02em; color: var(--blue-ink); }
+  .wm-x { width: 40px; height: 40px; border: 0; border-radius: 20px; background: transparent; color: #55677A; display: flex; align-items: center; justify-content: center; }
+  .wm-x:hover { background: #EEF2F6; }
+  .wm-body { padding: 14px 22px 8px; min-height: 352px; }
+  .wm-fac small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #607280; }
+  .wm-fac b { display: block; font-size: 16px; font-weight: 700; color: var(--blue-ink); }
+  .pill-group { display: flex; background: #EDF2F7; border-radius: 24px; padding: 4px; gap: 4px; margin-top: 14px; }
+  .pill-group button { flex: 1; min-height: 42px; border: 0; border-radius: 20px; background: transparent; font-size: 13px; font-weight: 600; color: #55677A; }
+  .pill-group button:hover { background: rgba(255,255,255,.6); }
+  .pill-group button.sel { background: #fff; color: var(--blue-ink); font-weight: 700; box-shadow: 0 1px 4px rgba(0,50,100,.2); }
+  .wm .sec { font-size: 13px; font-weight: 700; color: var(--blue-ink); margin: 16px 2px 8px; }
+  .radio-list { background: #F5F8FB; border-radius: 10px; overflow: hidden; }
+  .radio { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; border: 0; background: transparent; padding: 0 14px; text-align: left; font-size: 13px; font-weight: 600; color: #42566A; border-top: 1px solid #E3EAF1; }
+  .radio:first-child { border-top: 0; }
+  .radio:hover { background: #EBF1F7; }
+  .radio .dot { width: 20px; height: 20px; border-radius: 10px; border: 2px solid #9DB0C3; flex: none; background: #fff; }
+  .radio.sel { font-weight: 700; color: var(--blue-ink); }
+  .radio.sel .dot { border-color: #0A5AA6; box-shadow: inset 0 0 0 5px #0A5AA6; }
+  .wm-foot { border-top: 1px solid #E1E8EF; padding: 12px 22px 16px; display: flex; align-items: center; gap: 16px; }
+  .wm-foot .sum { flex: 1; font-size: 12px; color: #607280; line-height: 1.3; }
+  .wm-foot .sum b { color: var(--blue-ink); font-weight: 700; display: block; }
+  .wm-open { min-height: 44px; padding: 0 22px; border: 0; border-radius: 4px; background: #0A5AA6; color: #fff; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+  .wm-open:hover { background: #084A88; }
+
+  /* PDF opened in a new browser tab (stand-in) */
+  .tab { position: fixed; inset: 0; z-index: 60; background: #E9EEF3; display: none; flex-direction: column; color: #2A3B4C; font-family: var(--sans); }
+  .tab.open { display: flex; }
+  .tab-strip { height: 40px; background: #D3DBE4; display: flex; align-items: flex-end; padding: 0 12px; gap: 4px; flex: none; }
+  .tab-strip .t { background: #fff; height: 32px; border-radius: 8px 8px 0 0; padding: 0 12px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; min-width: 260px; }
+  .tab-strip .t button { margin-left: auto; border: 0; background: transparent; font-size: 16px; color: #55677A; border-radius: 11px; width: 22px; height: 22px; line-height: 1; }
+  .tab-strip .t button:hover { background: #E1E8EF; }
+  .tab-url { height: 38px; background: #fff; border-bottom: 1px solid #D3DBE4; flex: none; display: flex; align-items: center; padding: 0 16px; }
+  .tab-url span { background: #EEF2F6; border-radius: 14px; padding: 4px 16px; font-size: 13px; color: #55677A; }
+  .tab-body { flex: 1; display: flex; justify-content: center; padding: 22px; overflow: hidden; }
+  .paper { width: 620px; background: #fff; border-radius: 3px; padding: 32px 36px; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+  .paper h4 { margin: 0; font-size: 22px; color: var(--blue-ink); }
+  .paper p { margin: 4px 0 20px; font-size: 14px; color: #607280; line-height: 1.4; }
+  .paper i { display: block; height: 10px; border-radius: 3px; background: #E3EAF1; margin-bottom: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ============ Facility Portal · Visit List ============ -->
+<header class="nav">
+  <img src="logo.svg" alt="Vohra Wound Physicians">
+  <span class="item on">Dashboard</span><span class="item">Patients</span><span class="item">Visits</span>
+  <span class="item">Reporting Center <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg></span>
+  <div class="sel">0.4 Mile Facility, LOWA, IA <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8l8 9 8-9z"/></svg></div>
+  <span class="find"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>Patient</span>
+  <span class="user">Juan Millan <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg>&nbsp; 29:55</span>
+</header>
+
+<main class="page">
+  <div class="cols">
+    <!-- Left -->
+    <div>
+      <section class="card"><h3>Summary Information</h3><div class="pad">
+        <b>Facility Name:</b><br>0.4 Mile Facility<br>Test,LOWA, IA, 87987
+        <div class="stats">
+          <div><span class="pill">1</span><a>Visit(s) Latest</a></div><div><span class="pill">0</span><a>Visit(s) Today</a></div><div><span class="pill">0</span><a>Visit(s) Yesterday</a></div>
+          <div><span class="pill">0</span><a>Visit(s) This Week</a></div><div><span class="pill">1</span><a>Visit(s) This Month</a></div><div><span class="pill">159</span><a>Patient(s)</a></div>
+        </div>
+        <div class="tasks">Common Tasks</div><a class="lnk">View Patient List</a><a class="lnk">View Recent Visits</a><a class="lnk">View Specialist Notes</a>
+      </div></section>
+      <section class="ad" style="margin-top:14px"><h4>Clinical Outcomes at a Glance</h4><p>See Trends. Identify Risks. Take Action.</p><button class="open" tabindex="-1">Open Dashboard</button><img src="dashboard-ad.png" alt=""></section>
+      <section class="card"><h3>Predictive Healing</h3><div class="pad">Try Vohra's New Artificial Intelligence tool specifically designed to provide you with an estimated healing time for any wound.<br><button class="btn-o" tabindex="-1">Launch Predictive Tool</button></div></section>
+      <section class="card"><h3>VisualDX</h3><div class="pad">On Demand Info and Images of Any Diagnosis – Enter Condition Below
+        <div class="search"><div class="in">Enter a Symptom or Medication</div><div class="go"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg></div></div></div></section>
+    </div>
+
+    <!-- Middle -->
+    <section class="card vl">
+      <div class="tabs"><div class="on">Visit List</div><div>Dressing Orders</div><div>Acknowledgements<span class="badge">0</span></div><div>Referred Patients</div></div>
+      <div class="tool"><span class="lbl">Show Visits</span><span class="sel2" style="width:122px">Latest <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8l8 9 8-9z"/></svg></span>
+        <button class="fp-b" tabindex="-1" style="margin-left:auto">Print</button><button class="fp-b" id="openRs">Rounds Sheets</button><button class="fp-b" tabindex="-1">QA Report</button><button class="fp-b o" tabindex="-1">Facesheet</button></div>
+      <div class="tbl">
+        <div class="meta"><span class="sel2" style="width:64px">10 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8l8 9 8-9z"/></svg></span>&nbsp;&nbsp;Records Per Page<span class="pg">Previous <b>1</b> Next</span></div>
+        <div class="tr h"><span class="cb"></span><span>Patient Name</span><span>DOB</span><span>Last Visit</span><span>Next Visit</span><span>Status</span><span>Documents</span></div>
+        <div class="tr"><span class="cb"></span><span style="color:var(--blue)">AutoFN_39DFC AutoLN_39DFC</span><span>10/04/1956</span><span>11/05/2026</span><span>11/12/2026</span><span>Active</span><span><span class="vn">Visit Note</span></span></div>
+        <div class="meta" style="margin-top:16px"><span>Showing 1 to 1 of 1 Records</span><span class="pg">Previous <b>1</b> Next</span></div>
+      </div>
+    </section>
+
+    <!-- Right -->
+    <section class="card"><h3>New Patient Referral</h3><div class="pad">
+      <b>Option 1 : Online</b>
+      <div class="drop"><svg width="38" height="30" viewBox="0 0 38 30" fill="#3A7BC2"><path d="M2 4a2 2 0 0 1 2-2h9l3 4h14a2 2 0 0 1 2 2v3H2z"/><path d="M0 14h35l-4 14H3z" opacity=".85"/></svg>Drop a facesheet file here or click to upload.<span>Only JPEG and PDF file formats are compatible</span></div>
+      <div class="two fld"><div style="display:contents"><div style="border:0;background:none;padding:0;display:block;height:auto"><label>First Name <i>*</i></label><div></div></div><div style="border:0;background:none;padding:0;display:block;height:auto"><label>Middle Initial</label><div></div></div>
+        <div style="border:0;background:none;padding:0;display:block;height:auto"><label>Last Name <i>*</i></label><div></div></div><div style="border:0;background:none;padding:0;display:block;height:auto"><label>DOB <i>*</i></label><div></div></div></div></div>
+      <div class="fld"><label>Primary Payer Name</label><div>Select <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8l8 9 8-9z"/></svg></div>
+        <label>Primary Payer ID</label><div></div><label>Medicare Beneficiary ID</label><div></div><label>Comments <small>(Optional)</small></label><div></div></div>
+      <div class="refbtns"><button class="fp-b" tabindex="-1">Clear</button><button class="fp-b" tabindex="-1">Submit</button></div>
+      <div style="text-align:center;font-weight:700">Multiple Patients to Refer?</div>
+      <button class="ghost" tabindex="-1">Launch Bulk Submissions</button>
+    </div></section>
+  </div>
+
+  <section class="card ep">
+    <h3>Patient Wound Care End Points<small>Data is based on less than 100 patients. Count may be too low to determine relevance.</small></h3>
+    <div class="ep-body">
+      <div class="ep-year"><span>Year</span><span class="sel2">One Year to Date <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 8l8 9 8-9z"/></svg></span></div>
+      <div class="eptable" id="eptable"></div>
+      <svg id="donut" viewBox="0 0 780 500" role="img" aria-label="Patient wound care end points"></svg>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><span><a>Privacy Policy</a> | <a>Terms &amp; Conditions</a></span><span>© Vohra Wound Physicians 2026, VHS Medical Documentation and Coding Certification. Version: 1.1.01</span></footer>
+<div class="chat"><span class="pill2">Chat with us 👋</span><span class="dot"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></span></div>
+
+<!-- ============ Rounds Sheets modal ============ -->
+<div class="backdrop" id="backdrop"><div class="wm" role="dialog" aria-label="Rounds Sheets" id="wm"></div></div>
+
+<!-- ============ PDF in a new browser tab (stand-in) ============ -->
+<div class="tab" id="tab"></div>
+
+<script>
+const FAC = '0.4 Mile Facility';
+const PATIENTS = { all: 'All patients', multi: 'Multi-Visit patients' };
+const RS_SORT  = { room: 'Room #', name: 'Name (A–Z)' };
+const PRS_SORT = { dos: 'Date of Service', room: 'Room #', name: 'Name (A–Z)' };
+const S = { doc: 'rs', rsPat: 'all', rsSort: 'room', prsSort: 'dos' };
+const X = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const EXT = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+
+const radios = (name, opts, cur) => `<div class="radio-list">${Object.keys(opts).map(k => `<button class="radio ${cur === k ? 'sel' : ''}" data-set="${name}|${k}"><span class="dot"></span>${opts[k]}</button>`).join('')}</div>`;
+const docName = () => S.doc === 'rs' ? 'Rounds Sheet' : 'Post Rounds Sheet';
+const summary = () => S.doc === 'rs' ? `${PATIENTS[S.rsPat]} · sorted by ${RS_SORT[S.rsSort]}` : `Sorted by ${PRS_SORT[S.prsSort]}`;
+const choices = () => S.doc === 'rs'
+  ? `<div class="sec">Patients</div>${radios('rsPat', PATIENTS, S.rsPat)}<div class="sec">Sort by</div>${radios('rsSort', RS_SORT, S.rsSort)}`
+  : `<div class="sec">Sort by</div>${radios('prsSort', PRS_SORT, S.prsSort)}`;
+
+const backdrop = document.getElementById('backdrop'), wm = document.getElementById('wm'), tab = document.getElementById('tab');
+function renderModal() {
+  wm.innerHTML = `<div class="wm-head"><h2>Rounds Sheets</h2><button class="wm-x" data-action="close" aria-label="Close">${X}</button></div>
+    <div class="wm-body"><div class="wm-fac"><small>FACILITY</small><b>${FAC}</b></div>
+      <div class="pill-group"><button data-set="doc|rs" class="${S.doc === 'rs' ? 'sel' : ''}">Rounds Sheet</button><button data-set="doc|prs" class="${S.doc === 'prs' ? 'sel' : ''}">Post Rounds Sheet</button></div>${choices()}</div>
+    <div class="wm-foot"><div class="sum"><b>${docName()}</b>${summary()}</div><button class="wm-open" data-action="open">Open PDF ${EXT}</button></div>`;
+}
+function openModal() { renderModal(); backdrop.classList.add('open'); document.body.classList.add('locked'); }
+function closeModal() { backdrop.classList.remove('open'); document.body.classList.remove('locked'); }
+function openTab() {
+  const lines = '<i style="width:100%"></i>'.repeat(3) + '<i style="width:84%"></i><i style="width:92%"></i><i style="width:70%"></i>'.repeat(3);
+  tab.innerHTML = `<div class="tab-strip"><div class="t"><span>${docName()} – ${FAC}.pdf</span><button data-action="closeTab" title="Close tab">×</button></div></div>
+    <div class="tab-url"><span>https://facilityportal.vohrawoundteam.com/rounds-sheet.pdf</span></div>
+    <div class="tab-body"><div class="paper"><h4>${docName()}</h4><p>${FAC}<br>${summary()}</p>${lines}</div></div>`;
+  closeModal(); tab.classList.add('open'); document.body.classList.add('locked');
+}
+function closeTab() { tab.classList.remove('open'); document.body.classList.remove('locked'); }
+
+document.getElementById('openRs').addEventListener('click', openModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeTab(); closeModal(); } });
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.set) { const [k, v] = t.dataset.set.split('|'); S[k] = v; renderModal(); }
+  else if (t.dataset.action === 'close') closeModal();
+  else if (t.dataset.action === 'open') openTab();
+  else if (t.dataset.action === 'closeTab') closeTab();
+});
+
+/* ---------- static end-points table + donut ---------- */
+const EP = [
+  ['Active', 48, 24, '#3C31F8'], ['Hospitalization – Wound Related', 14, 7, '#4BA0F5'], ['Sign Off Without Visit – In House', 12, 6, '#E3112A'],
+  ['Sign Off With Visit', 8, 4, '#2F5C9B'], ['Sign Off Without Visit – Discharged Home', 8, 4, '#9B6BB0'], ['Hospitalization – Wound Unrelated', 4, 2, '#E07B6A'],
+  ['Sign Off Without Visit – Discharged to Another Facility', 4, 2, '#5CF590'], ['Last Seen - more than 30 days', 2, 1, '#2E7D9A']
+];
+const TBL_ORDER = ['Active','Hospitalization – Wound Related','Hospitalization – Wound Unrelated','Last Seen - more than 30 days','Sign Off With Visit','Sign Off Without Visit – Discharged Home','Sign Off Without Visit – Discharged to Another Facility','Sign Off Without Visit – In House'];
+document.getElementById('eptable').innerHTML = `<div class="eprow h"><span>End Points</span><span>Percentage</span><span>Count</span></div>` +
+  TBL_ORDER.map(n => EP.find(r => r[0] === n)).map(r => `<div class="eprow"><span class="n"><i style="background:${r[3]}"></i>${r[0]}</span><span>${r[1]}</span><span class="c">${r[2]}</span></div>`).join('') +
+  `<div class="eprow t"><span>Total</span><span>100</span><span style="color:var(--blue)">50</span></div>`;
+
+(function donut() {
+  const svg = document.getElementById('donut'), cx = 390, cy = 300, R = 138, r = 70, NS = 'http://www.w3.org/2000/svg';
+  let a = -Math.PI / 2, out = '', labels = [];
+  EP.forEach(([name, pct, cnt, col]) => {
+    const a2 = a + pct / 100 * 2 * Math.PI, m = (a + a2) / 2, big = a2 - a > Math.PI ? 1 : 0;
+    const p = (rad, ang) => [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)];
+    const [x1, y1] = p(R, a), [x2, y2] = p(R, a2), [x3, y3] = p(r, a2), [x4, y4] = p(r, a);
+    out += `<path d="M${x1},${y1} A${R},${R} 0 ${big} 1 ${x2},${y2} L${x3},${y3} A${r},${r} 0 ${big} 0 ${x4},${y4}Z" fill="${col}" stroke="#fff" stroke-width="1"/>`;
+    const [dx, dy] = p((R + r) / 2, m), [ex, ey] = p(R + 20, m);
+    labels.push({ name, pct, cnt, m, dx, dy, ex, ey, right: Math.cos(m) >= 0 });
+    a = a2;
+  });
+  [true, false].forEach(side => {
+    const L = labels.filter(l => l.right === side).sort((p, q) => p.ey - q.ey);
+    for (let i = 1; i < L.length; i++) if (L[i].ey - L[i - 1].ey < 34) L[i].ey = L[i - 1].ey + 34;
+    L.forEach(l => {
+      const hx = l.ex + (side ? 26 : -26), tx = hx + (side ? 4 : -4), anchor = side ? 'start' : 'end';
+      out += `<circle cx="${l.dx}" cy="${l.dy}" r="1.8" fill="#111"/><polyline points="${l.dx},${l.dy} ${l.ex},${l.ey} ${hx},${l.ey}" fill="none" stroke="#111" stroke-width=".8"/>`;
+      out += `<text x="${tx}" y="${l.ey - 2}" text-anchor="${anchor}">${l.pct.toFixed(1)}% (Count = ${l.cnt})</text><text x="${tx}" y="${l.ey + 11}" text-anchor="${anchor}">${l.name.replace(/&/g,'&amp;')}</text>`;
+    });
+  });
+  svg.innerHTML = out;
+})();
+</script>
+</body>
+</html>
