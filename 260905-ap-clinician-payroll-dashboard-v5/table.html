@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>All Clinicians — Clinician Payroll Dashboard — Prototype V5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="payroll-v5-shared.css">
+  <style>
+    .back { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 8px -4px; font-size: 14px; }
+    .back svg { width: 10px; height: 10px; }
+
+    .search { width: 220px; flex-shrink: 0; margin-left: 0; }
+    .filters { flex-wrap: wrap; gap: 8px 20px; }
+    .check { display: inline-flex; align-items: center; gap: 8px; height: 34px; font-size: 13px; color: var(--text-dark); cursor: pointer; white-space: nowrap; }
+    .check input { width: 16px; height: 16px; accent-color: var(--blu); cursor: pointer; }
+    /* V5: Download Excel sits next to Settings, far right */
+    #dlField { margin-left: auto; }
+    .no-groups #headRow th { top: 0; }
+    .late-cell { margin-top: 1px; }
+
+    .summary { margin: 0 30px 8px; display: flex; align-items: baseline; gap: 14px; font-size: 12px; color: var(--gra-text-2); }
+    .summary strong { color: var(--text-dark); }
+    .summary .flag { font-weight: 700; }
+    .summary__sort { margin-left: auto; }
+
+    .table-card { margin: 0 30px; background: #fff; border-radius: 4px; box-shadow: 0 0 4px rgba(0,0,0,.18); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    thead th {
+      position: sticky; top: 0; z-index: 2;
+      background: #fff;
+      text-align: left; vertical-align: bottom;
+      padding: 10px 12px 8px;
+      border-bottom: 2px solid var(--gra-01);
+    }
+    thead th:first-child { border-top-left-radius: 4px; }
+    thead th:last-child { border-top-right-radius: 4px; }
+    /* Group row (V3): sits above the column headers; both rows stay pinned */
+    #groupRow th { top: 0; height: 30px; padding: 8px 12px 4px; border-bottom: 1px solid var(--gra-01); font-family: 'Roboto Condensed', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-label); text-align: left; }
+    #headRow th { top: 30px; border-radius: 0; }
+    .grp-start { border-left: 1px solid var(--gra-01); }
+    th.num, td.num { text-align: right; }
+    .sort {
+      border: none; background: none; cursor: pointer; padding: 2px 4px; margin: 0 -4px; border-radius: 3px;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-label);
+      display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; text-align: inherit;
+    }
+    .sort:hover { background: var(--blue-ligh-11); color: var(--blu); }
+    .sort svg { width: 9px; height: 11px; color: var(--gra-text-1); opacity: .5; }
+    th[aria-sort] .sort { color: var(--blu); }
+    th[aria-sort] .sort svg { color: var(--blu); opacity: 1; }
+    .th__thr { display: block; font-size: 10px; font-weight: 400; color: var(--gra-text-1); margin-top: 2px; white-space: nowrap; }
+
+    tbody td { padding: 7px 12px; border-bottom: 1px solid var(--gra-02); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--blue-ligh-14); }
+    td.sorted { background: #f7fbfe; }
+    .cell { display: flex; flex-direction: column; gap: 1px; }
+    td.num .cell { align-items: flex-end; }
+    .v { font-family: 'Roboto Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-dark); white-space: nowrap; }
+    .v--none { color: var(--gra-text-1); font-weight: 400; }
+    .v .flag { font-weight: 700; }
+    .d { font-size: 10px; color: var(--gra-text-1); white-space: nowrap; }
+    .who { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .who .name { font-size: 13px; }
+    .tags { display: inline-flex; gap: 3px; }
+
+    .empty { padding: 34px 10px; text-align: center; font-size: 13px; color: var(--gra-text-1); }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div class="page-header">
+      <div>
+        <a class="link-btn back" id="back" href="#"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 1.5L3 5l3.5 3.5"/></svg>Back to dashboard</a>
+        <h1 class="page-title">All clinicians</h1>
+        <p class="page-desc" id="pageDesc"></p>
+      </div>
+    </div>
+
+    <section class="filters">
+      <div class="field">
+        <span class="field-label" id="viewLabel">Show</span>
+        <div class="seg seg--text" id="viewSeg" role="group" aria-labelledby="viewLabel">
+          <button type="button" data-view="active">Active</button><button type="button" data-view="terminated">Terminated</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="preset">Date range</label>
+        <div class="range-controls">
+          <select class="select" id="preset">
+          </select>
+          <input type="date" class="input input--date" id="from" aria-label="From">
+          <span class="range-sep">to</span>
+          <input type="date" class="input input--date" id="to" aria-label="To">
+        </div>
+        <div class="range-note" id="rangeNote"></div>
+      </div>
+      <div class="field search" id="search">
+        <label class="field-label" for="q">Clinician</label>
+        <svg class="search__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+        <input class="input" id="q" placeholder="Filter by name" autocomplete="off">
+        <button class="search__clear" id="qClear" aria-label="Clear filter">&times;</button>
+      </div>
+      <div class="field field--btn" id="overField">
+        <label class="check"><input type="checkbox" id="onlyOver"> Only over a limit</label>
+      </div>
+      <div class="field field--btn" id="dlField">
+        <button class="btn" id="dlBtn" type="button" title="Downloads the rows currently shown"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M4.5 7L8 10.5 11.5 7M2.5 13.5h11"/></svg>Download Excel</button>
+      </div>
+      <div class="field field--btn">
+        <button class="btn" id="tOpen" type="button"></button>
+      </div>
+    </section>
+
+    <div class="summary" id="summary"></div>
+    <div class="table-card" id="tableCard">
+      <table>
+        <thead><tr id="groupRow"></tr><tr id="headRow"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+  </main>
+
+<script src="payroll-v5-shared.js"></script>
+<script>
+mountChrome('<a href="#">Dashboard</a>&nbsp;&gt;&nbsp;<a href="#" id="crumbDash">Clinician Payroll Dashboard</a>&nbsp;&gt;&nbsp;All Clinicians');
+
+const DASH_PAGE = 'index.html';
+const state = readState();
+let T = loadThresholds(), TE = T;
+const q0 = new URLSearchParams(location.search);
+let view = state.view;                       // 'active' | 'terminated' (V5)
+let sortKey = ['name', 'state', 'm1', 'm2', 'm3', 'm4', 'm5'].includes(state.sort) ? state.sort : 'm4';
+let sortDir = state.dir === 'asc' || state.dir === 'desc' ? state.dir : defaultDir(sortKey);
+let tSortKey = 'term', tSortDir = 'desc';
+let onlyOver = q0.get('over') === '1';
+let shown = 0, D = null;                     // rows currently on screen, for the Download Excel note
+
+function defaultDir(k) { return METRICS[k] ? METRICS[k].dir : 'asc'; }
+
+const COLS = [
+  { key: 'name',  label: 'Clinician',     get: r => r.c.name },
+  { key: 'state', label: 'Primary state', get: r => r.c.primary },
+  ...GROUP_KEYS.map(key => ({ key, num: true, first: GROUPS.some(g => tableKeys(g)[0] === key) }))
+];
+/* Terminated view: its own columns, no metric groups */
+const T_COLS = [
+  { key: 'name',  label: 'Clinician',         get: t => t.c.name },
+  { key: 'state', label: 'Primary state',     get: t => t.c.primary },
+  { key: 'first', label: 'First encounter',   get: t => t.first, num: true, fmt: v => fmt(v, true), dir: 'asc' },
+  { key: 'last',  label: 'Last encounter',    get: t => t.last,  num: true, fmt: v => fmt(v, true), dir: 'desc' },
+  { key: 'term',  label: 'Access removed',    get: t => t.term,  num: true, fmt: v => fmt(v, true), dir: 'desc' }
+];
+const sortLabel = k => ({ name: 'clinician', state: 'primary state' })[k] || (view === 'terminated' ? T_COLS.find(c => c.key === k).label.toLowerCase() : METRICS[k].col.toLowerCase());
+const dirWord = (k, d) => {
+  if (k === 'name' || k === 'state') return d === 'asc' ? 'A–Z' : 'Z–A';
+  if (view === 'terminated') return d === 'asc' ? 'earliest first' : 'latest first';
+  if (k === 'm1') return d === 'asc' ? 'earliest first' : 'latest first';
+  if (k === 'm3') return d === 'desc' ? 'longest first' : 'shortest first';
+  if (k === 'm2') return d === 'asc' ? 'biggest drop first' : 'biggest increase first';
+  return d === 'asc' ? 'fewest first' : 'most first';
+};
+
+const ARROWS = {
+  none: '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 0L8 4H1zM4.5 11L1 7h7z"/></svg>',
+  asc:  '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 1L8.5 6h-8z"/></svg>',
+  desc: '<svg viewBox="0 0 9 11" fill="currentColor"><path d="M4.5 10L.5 5h8z"/></svg>'
+};
+
+function renderHead() {
+  $('tableCard').classList.toggle('no-groups', view === 'terminated');
+  if (view === 'terminated') {
+    $('groupRow').innerHTML = '';
+    $('headRow').innerHTML = T_COLS.map(col => {
+      const on = col.key === tSortKey;
+      return `<th class="${col.num ? 'num' : ''}" ${on ? `aria-sort="${tSortDir === 'asc' ? 'ascending' : 'descending'}"` : ''}>
+        <button class="sort" data-sort="${col.key}">${col.label}${ARROWS[on ? tSortDir : 'none']}</button></th>`;
+    }).join('');
+    return;
+  }
+  $('groupRow').innerHTML = '<th colspan="2" class="gh gh--blank"></th>' +
+    GROUPS.map(g => `<th colspan="${tableKeys(g).length}" class="gh grp-start" scope="colgroup">${g.title}</th>`).join('');
+  $('headRow').innerHTML = COLS.map(col => {
+    const m = METRICS[col.key], on = col.key === sortKey;
+    const label = col.label || m.col;
+    const thr = m && m.tText ? `<span class="th__thr">Limit: ${thrText(col.key, T, TE)}</span>` : (col.key === 'm1' ? '<span class="th__thr">In this period</span>' : '');
+    return `<th class="${col.num ? 'num' : ''}${col.first ? ' grp-start' : ''}" ${on ? `aria-sort="${sortDir === 'asc' ? 'ascending' : 'descending'}"` : ''}>
+      <button class="sort" data-sort="${col.key}">${label}${ARROWS[on ? sortDir : 'none']}</button>${thr}</th>`;
+  }).join('');
+}
+
+function cell(key, r) {
+  const m = METRICS[key], v = m.get(r), over = key !== 'm1' && isOver(key, r, TE);
+  let main, detail = '';
+  if (key === 'm1') {
+    main = v === null ? '<span class="v v--none">—</span>' : `<span class="v">${fmt(v, true)}</span>`;
+    if (v !== null) detail = WD[dt(v).getUTCDay()] + (r.isRehire ? ' · re-hire' : '');
+  } else if (key === 'm5' && v === null) {
+    main = '<span class="v v--none" title="No secondary state">—</span>';
+  } else if (v === null) {
+    main = '<span class="v v--none">—</span>';
+    detail = key === 'm2' ? 'No full previous period' : 'No visits';
+  } else {
+    main = `<span class="v">${flagged(m.fmt(v), over)}</span>`;
+    if (key === 'm2') detail = `${r.prev} → ${r.cur}`;
+    if (key === 'm3') detail = lateLabel(r, TE.m3, D.a, D.b);   // V5: "6 of 196 visits over 24h", opens the list
+    if (key === 'm5') detail = r.secBy.map(s => `${s.state} ${s.n}`).join(' · ');
+  }
+  const first = GROUPS.some(g => tableKeys(g)[0] === key);
+  return `<td class="num ${key === sortKey ? 'sorted' : ''}${first ? ' grp-start' : ''}"><div class="cell">${main}${detail ? `<span class="d">${detail}</span>` : ''}</div></td>`;
+}
+
+function sortRows(rows, get, dir) {
+  const sign = dir === 'asc' ? 1 : -1;
+  return rows.sort((x, y) => {
+    const a = get(x), b = get(y);
+    if (a === null && b === null) return x.c.name.localeCompare(y.c.name);
+    if (a === null) return 1;                       // blanks always last
+    if (b === null) return -1;
+    const c = typeof a === 'string' ? a.localeCompare(b) : a - b;
+    return c * sign || x.c.name.localeCompare(y.c.name);
+  });
+}
+
+function update() {
+  D = computeRows(state.range[0], state.range[1], state.cmp);
+  TE = effT(T, D);
+  const term = view === 'terminated';
+  $('tOpen').innerHTML = `${GEAR}Settings`;
+  $('onlyOver').checked = onlyOver;
+  $('overField').style.display = term ? 'none' : '';
+  [...$('viewSeg').children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  $('pageDesc').textContent = term
+    ? 'Clinicians whose access was removed in the period. Their history stays in the system.'
+    : 'Every active clinician in the period, with all five metrics. Values over a limit are in red.';
+  const query = stateQuery(state, T);
+  $('back').href = $('crumbDash').href = DASH_PAGE + query;
+  history.replaceState(null, '', stateQuery(state, T, { view, sort: sortKey, dir: sortDir, over: onlyOver ? 1 : 0 }));
+  const text = $('q').value.trim().toLowerCase();
+
+  if (term) {
+    let rows = D.terminated.filter(t => !text || fullName(t.c).toLowerCase().includes(text));
+    const col = T_COLS.find(c => c.key === tSortKey);
+    sortRows(rows, col.get, tSortDir);
+    shown = rows.length;
+    $('summary').innerHTML = `<span><strong>${plural(D.terminated.length, 'clinician')}</strong> terminated in ${fmtRange(D.a, D.b)}</span>
+      ${rows.length !== D.terminated.length ? `<span>Showing <strong>${rows.length}</strong></span>` : ''}
+      <span class="summary__sort">Sorted by ${sortLabel(tSortKey)}, ${dirWord(tSortKey, tSortDir)}</span>`;
+    renderHead();
+    $('body').innerHTML = rows.length ? rows.map(t => `<tr>
+        <td class="${tSortKey === 'name' ? 'sorted' : ''}"><div class="who">${nameLink(t.c)}${t.back !== null ? `<span class="tag tag--rehire" title="Access removed ${fmt(t.term, true)}, back ${fmt(t.back, true)}">Re-hired</span>` : ''}</div></td>
+        <td class="${tSortKey === 'state' ? 'sorted' : ''}"><span class="tag">${t.c.primary}</span></td>
+        ${T_COLS.slice(2).map(col => { const v = col.get(t); return `<td class="num ${col.key === tSortKey ? 'sorted' : ''}"><div class="cell">${v === null ? '<span class="v v--none">—</span>' : `<span class="v">${col.fmt(v)}</span><span class="d">${WD[dt(v).getUTCDay()]}</span>`}</div></td>`; }).join('')}
+      </tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty">${text ? 'No clinician matches that name.' : 'No clinician had their access removed in this period.'}</div></td></tr>`;
+    return;
+  }
+
+  const totalOver = D.rows.filter(r => anyOver(r, TE)).length;
+  let rows = D.rows.filter(r => (!text || fullName(r.c).toLowerCase().includes(text)) && (!onlyOver || anyOver(r, TE)));
+  const get = (COLS.find(c => c.key === sortKey).get) || METRICS[sortKey].get;
+  sortRows(rows, get, sortDir);
+  shown = rows.length;
+
+  $('summary').innerHTML = `<span><strong>${plural(D.rows.length, 'clinician')}</strong> active in ${fmtRange(D.a, D.b)}</span>
+    <span>${totalOver ? `<span class="flag">${FLAG}${totalOver}</span> over at least one limit` : 'None over a limit'}</span>
+    ${rows.length !== D.rows.length ? `<span>Showing <strong>${rows.length}</strong></span>` : ''}
+    <span class="summary__sort">Sorted by ${sortLabel(sortKey)}, ${dirWord(sortKey, sortDir)}</span>`;
+
+  renderHead();
+  $('body').innerHTML = rows.length ? rows.map(r => `<tr>
+      <td class="${sortKey === 'name' ? 'sorted' : ''}"><div class="who">${nameLink(r.c)}${r.isRehire ? '<span class="tag tag--rehire">Re-hire</span>' : r.isNew ? '<span class="tag tag--new">New</span>' : ''}</div></td>
+      <td class="${sortKey === 'state' ? 'sorted' : ''}"><span class="tag">${r.c.primary}</span></td>
+      ${GROUP_KEYS.map(k => cell(k, r)).join('')}
+    </tr>`).join('')
+    : `<tr><td colspan="7"><div class="empty">${onlyOver && !text ? 'No clinicians are over a limit in this period.' : 'No clinician matches that name.'}</div></td></tr>`;
+}
+
+initRange(state, update);
+bindLate(() => ({ a: state.range[0], b: state.range[1], limitH: TE.m3 }));
+$('headRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-sort]'); if (!b) return;
+  const k = b.dataset.sort;
+  if (view === 'terminated') {
+    if (k === tSortKey) tSortDir = tSortDir === 'asc' ? 'desc' : 'asc';
+    else { tSortKey = k; tSortDir = (T_COLS.find(c => c.key === k).dir) || 'asc'; }
+  } else if (k === sortKey) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortKey = k; sortDir = defaultDir(k); }
+  update();
+});
+$('viewSeg').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b && b.dataset.view !== view) { view = state.view = b.dataset.view; update(); } });
+$('onlyOver').addEventListener('change', e => { onlyOver = e.target.checked; update(); });
+$('q').addEventListener('input', () => { $('search').classList.toggle('search--filled', !!$('q').value); update(); });
+$('qClear').addEventListener('click', () => { $('q').value = ''; $('search').classList.remove('search--filled'); update(); $('q').focus(); });
+$('tOpen').addEventListener('click', () => openThresholds(T, next => { T = next; saveThresholds(T); update(); }));
+$('dlBtn').addEventListener('click', () => toast(`<strong>Prototype:</strong> no file is generated. The Excel file would hold the ${plural(shown, 'row')} shown here (${view === 'terminated' ? 'terminated' : 'active'} clinicians), with this date range, filter and sort.`));
+
+update();
+</script>
+</body>
+</html>
