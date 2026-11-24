@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Create Skin Assessment Pre-Billing Audit Rule — Prototype v1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .form-card { margin: 0 30px; background: #fff; border-radius: 4px; box-shadow: 0 0 4px rgba(0,0,0,.18); }
+    .top { background: var(--blue-ligh-14); padding: 18px 30px 20px; display: flex; gap: 16px; align-items: flex-start; border-radius: 4px 4px 0 0; }
+    .top .input { width: 100%; }
+    .f-name { width: 420px; } .f-date { width: 150px; }
+    .nend { display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 700; margin-top: 6px; cursor: pointer; }
+    .hold { padding: 22px 30px 34px; }
+    .hold h2 { font-family: 'Roboto Condensed', sans-serif; font-weight: 400; font-size: 22px; color: var(--blu); }
+    .hold > p { font-size: 13px; margin-top: 4px; line-height: 1.5; }
+    .cards { display: flex; gap: 40px; margin-top: 22px; align-items: flex-start; }
+    .cond { width: 372px; min-height: 236px; border: 1px solid var(--blue-ligh-09); border-radius: 4px; background: var(--blue-ligh-14); overflow: hidden; }
+    .cond__head { display: flex; align-items: center; gap: 10px; padding: 0 18px; height: 38px; background: var(--gra-02); color: var(--gra-text-2); font: 700 14px 'Roboto Condensed', sans-serif; }
+    .cond.on { background: #fff; }
+    .cond.on .cond__head { background: var(--blu); color: #fff; }
+    .cond .toggle { width: 38px; height: 20px; }
+    .cond .toggle span::after { width: 16px; height: 16px; }
+    .cond .toggle input:checked + span::after { left: 20px; }
+    .cond.on .toggle span { background: rgba(255,255,255,.4); }
+    .cond.on .toggle input:checked + span { background: rgba(255,255,255,.4); }
+    .cond__body { padding: 16px 18px 18px; font-size: 12px; }
+    .how b { display: block; font-size: 12px; margin-bottom: 3px; color: var(--text-dark); }
+    .how { color: var(--gra-text-2); line-height: 1.45; }
+    .cond:not(.on) .on-only, .cond.on .off-only { display: none; }
+    /* Keywords mode: radio group (two options) */
+    .mode { margin-bottom: 16px; }
+    .mode .seg { display: flex; margin-top: 4px; }
+    .mode .seg button { flex: 1; font-size: 14px; padding: 8px 12px; }
+    .helper { font-size: 12px; color: var(--gra-text-2); margin: 0 0 12px; line-height: 1.45; }
+    .add-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .add-row .input { flex: 1; height: 28px; font-size: 12px; }
+    .add-row .btn { height: 28px; font-size: 12px; padding: 0 10px; }
+    .items { display: flex; flex-direction: column; gap: 4px; }
+    .item { display: flex; align-items: center; gap: 4px; background: var(--gra-02); border-radius: 3px; padding: 5px 4px 5px 8px; font-size: 12px; color: var(--text-blue-dark); }
+    .item span { flex: 1; }
+    .item button { border: none; background: none; cursor: pointer; font-size: 16px; line-height: 1; color: var(--gra-text-1); padding: 0 6px; border-radius: 3px; }
+    .item button:hover { background: rgba(0,106,181,.18); color: var(--text-blue-dark); }
+    .cond .field-label { margin-bottom: 4px; display: block; }
+    .cond .input, .cond .select { width: 100%; font-size: 12px; height: 28px; }
+    /* Review popup */
+    .rv-top { display: flex; gap: 40px; margin-bottom: 18px; font-size: 14px; }
+    .rv-top b { display: block; color: var(--text-dark); } .rv-top small { color: var(--gra-text-1); font-size: 12px; }
+    .rv { border: 1px solid var(--blue-ligh-09); border-radius: 3px; margin-bottom: 14px; }
+    .rv__h { background: #cdebd6; color: var(--text-blue-dark); font: 700 12px 'Roboto', sans-serif; padding: 5px 10px; }
+    .rv__b { padding: 8px 10px; font-size: 14px; max-height: 150px; overflow-y: auto; }
+    .rv__mode { font-size: 12px; font-weight: 700; color: var(--text-blue-dark); margin-bottom: 4px; }
+    .rv__li { display: flex; gap: 10px; padding: 2px 0; } .rv__li i { color: var(--blue-ligh-04); font-style: normal; width: 14px; flex: none; }
+    .ok-msg { text-align: center; padding: 50px 0 20px; font-size: 22px; color: var(--blu); line-height: 1.35; }
+    .ok-msg svg { display: block; margin: 0 auto 14px; }
+    .err { margin-top: 8px; font-size: 12px; color: var(--red-text); }
+  </style>
+</head>
+<body>
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Create Skin Assessment Pre-Billing Audit Rule</h1>
+    <div class="page-actions">
+      <a class="btn" href="rules.html">Cancel</a>
+      <button class="btn btn--primary" id="review" type="button">Review rule</button>
+    </div>
+  </div>
+  <section class="form-card">
+    <div class="top">
+      <div class="f-name field"><label class="field-label" for="name">Rule name<i>*</i></label><input class="input" id="name" value="Rule name 01" autocomplete="off"></div>
+      <div class="f-date field"><label class="field-label" for="start">Start date <i>*</i></label><input class="input" id="start" type="date" value="2026-12-01"></div>
+      <div class="f-date field"><label class="field-label" for="end">End date</label><input class="input" id="end" type="date" value="2027-02-25"><label class="nend"><input type="checkbox" id="noEnd"> No end date</label></div>
+    </div>
+    <div class="hold">
+      <h2>When to hold a visit</h2>
+      <p><b>Turn on at least one condition.</b> Keywords and Frequency each hold a visit on their own. Clinicians limits the rule to the clinicians you select.</p>
+      <div class="cards">
+
+        <div class="cond" id="cKw">
+          <div class="cond__head">Keywords <label class="toggle"><input type="checkbox" id="tKw" aria-label="Keywords"><span></span></label></div>
+          <div class="cond__body">
+            <div class="how off-only"><b>How it works</b>A visit is held when its note contains any of the words or phrases you add, or none of them, depending on your choice.</div>
+            <div class="on-only">
+              <div class="mode">
+                <span class="field-label" id="modeLbl">Hold a visit based on the words or phrases in its note.</span>
+                <div class="seg" role="radiogroup" aria-labelledby="modeLbl" id="kwSeg">
+                  <button type="button" role="radio" aria-checked="true" data-v="contains">Contains</button>
+                  <button type="button" role="radio" aria-checked="false" data-v="not">Does not contain</button>
+                </div>
+              </div>
+              <label class="field-label" for="kwIn">Enter a word or phrase</label>
+              <div class="add-row"><input class="input" id="kwIn" autocomplete="off"><button class="btn" id="kwAdd" type="button">+ Add</button></div>
+              <div class="items" id="kwItems"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cond" id="cFr">
+          <div class="cond__head">Frequency <label class="toggle"><input type="checkbox" id="tFr" aria-label="Frequency"><span></span></label></div>
+          <div class="cond__body">
+            <div class="how off-only"><b>How it works</b>If a clinician does more than one skin assessment for the same patient within this many days, every visit after the first is held.</div>
+            <div class="on-only"><label class="field-label" for="fr">Add Frequency (days)</label><input class="input" id="fr" inputmode="numeric" value="12" autocomplete="off"></div>
+          </div>
+        </div>
+
+        <div class="cond" id="cCl">
+          <div class="cond__head">Clinicians(s) <label class="toggle"><input type="checkbox" id="tCl" aria-label="Clinicians"><span></span></label></div>
+          <div class="cond__body">
+            <div class="how off-only"><b>How it works</b>Hold visits only for the clinicians you select. When off, the rule applies to all clinicians.</div>
+            <div class="on-only">
+              <label class="field-label" for="clSel">Select Clinician(s)</label>
+              <select class="select" id="clSel"><option value=""></option><option>Alejandro Mann</option><option>Regina Hayes</option><option>Richard Durgan</option><option>Wayne Halvorson</option><option>Marguerite D'Amore</option></select>
+              <div class="items" id="clItems" style="margin-top:14px"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <p class="err" id="err" role="alert"></p>
+    </div>
+  </section>
+</main>
+<script src="shared.js"></script>
+<script>
+  mountChrome();
+  let keywords = ['No Drainage', 'Early detection of pressure ulcers and wounds', 'Better documentation for legal and quality standards'];
+  let clinicians = ['Alejandro Mann', 'Marguerite D\'Amore'];
+  const mode = () => document.querySelector('#kwSeg [aria-checked=true]').dataset.v;
+  function setMode(v) { document.querySelectorAll('#kwSeg button').forEach(b => b.setAttribute('aria-checked', b.dataset.v === v)); drawKw(); }
+
+  function sync(card, chk) { $(card).classList.toggle('on', $(chk).checked); }
+  ['Kw', 'Fr', 'Cl'].forEach(k => $('t' + k).addEventListener('change', () => { sync('c' + k, 't' + k); $('err').textContent = ''; }));
+
+  function drawKw() {
+    $('kwItems').innerHTML = keywords.map((k, i) => `<div class="item"><span>${esc(k)}</span><button type="button" data-i="${i}" aria-label="Remove ${esc(k)}">&times;</button></div>`).join('');
+  }
+  function drawCl() {
+    $('clItems').innerHTML = clinicians.map((k, i) => `<div class="item"><span>${esc(k)}</span><button type="button" data-i="${i}" aria-label="Remove ${esc(k)}">&times;</button></div>`).join('');
+  }
+  $('kwSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.v); });
+  $('kwItems').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { keywords.splice(+b.dataset.i, 1); drawKw(); } });
+  $('clItems').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { clinicians.splice(+b.dataset.i, 1); drawCl(); } });
+  function addKw() { const v = $('kwIn').value.trim(); if (v && !keywords.includes(v)) { keywords.push(v); drawKw(); } $('kwIn').value = ''; $('kwIn').focus(); }
+  $('kwAdd').addEventListener('click', addKw);
+  $('kwIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addKw(); } });
+  $('clSel').addEventListener('change', e => { const v = e.target.value; if (v && !clinicians.includes(v)) { clinicians.push(v); drawCl(); } e.target.value = ''; });
+  $('noEnd').addEventListener('change', e => { $('end').disabled = e.target.checked; });
+  drawKw(); drawCl();
+
+  /* Demo start state, set by the prototype panel: ?state=off | contains | not */
+  const st = new URLSearchParams(location.search).get('state') || 'off';
+  if (st !== 'off') { ['tKw', 'tFr', 'tCl'].forEach(id => { $(id).checked = true; }); }
+  ['Kw', 'Fr', 'Cl'].forEach(k => sync('c' + k, 't' + k));
+  setMode(st === 'not' ? 'not' : 'contains');
+
+  $('review').addEventListener('click', () => {
+    const kw = $('tKw').checked, fr = $('tFr').checked, cl = $('tCl').checked;
+    if (!kw && !fr && !cl) { $('err').textContent = 'Turn on at least one condition.'; return; }
+    if (kw && !keywords.length) { $('err').textContent = 'Add at least one keyword, or turn Keywords off.'; return; }
+    $('err').textContent = '';
+    const box = (h, b) => `<div class="rv"><div class="rv__h">${h}</div><div class="rv__b">${b}</div></div>`;
+    const list = a => a.map(x => `<div class="rv__li"><i>&times;</i><span>${esc(x)}</span></div>`).join('');
+    const period = `${fmtDate($('start').value)} – ${$('noEnd').checked ? 'No end date' : fmtDate($('end').value)}`;
+    openModal({
+      title: 'Final review',
+      body: `<div class="modal__lead">Once created, this rule can’t be changed. You can turn it off at any time.</div>
+        <div class="rv-top"><div><b>${esc($('name').value)}</b><small>Rule name</small></div><div><b>${period}</b><small>Effective period</small></div></div>
+        ${kw ? box(`Keywords (${keywords.length})`, `<div class="rv__mode">${KW_LABEL[mode()]}</div>${list(keywords)}`) : ''}
+        ${fr ? box('Frequency', `${esc($('fr').value)} days`) : ''}
+        ${cl ? box(`Clinician(s) (${clinicians.length})`, list(clinicians)) : ''}`,
+      foot: '<button class="btn" id="keep" type="button">Keep editing</button><button class="btn btn--primary" id="create" type="button">Create rule</button>'
+    });
+    $('keep').addEventListener('click', closeModal);
+    $('create').addEventListener('click', () => {
+      const rules = loadRules();
+      rules.push({ id: Date.now(), name: $('name').value, start: $('start').value, end: $('noEnd').checked ? null : $('end').value, on: false, kwMode: kw ? mode() : 'contains', keywords: kw ? keywords.slice() : [], freq: fr ? +$('fr').value : null, clinicians: cl ? clinicians.slice() : [] });
+      saveRules(rules);
+      openModal({ title: 'Final review', body: `<div class="ok-msg">${ICON.check}The new audit rule<br>has been created.</div>`, foot: '<button class="btn btn--primary" id="ok" type="button">OK</button>', center: true });
+      $('ok').addEventListener('click', () => { location.href = 'rules.html'; });
+    });
+  });
+
+</script>
+</body>
+</html>

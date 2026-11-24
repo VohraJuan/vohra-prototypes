@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Skin Assessment Pre-Billing Audit Rules — Prototype v1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .filters .select { width: 150px; }
+    .kw { display: flex; align-items: center; gap: 6px; }
+    .kw__mode { font-size: 11px; font-weight: 700; color: var(--text-blue-dark); background: var(--blue-ligh-09); border-radius: 3px; padding: 1px 6px; white-space: nowrap; }
+    .plus--k { margin-left: 0; }
+    td .tip { white-space: normal; max-width: 260px; }
+  </style>
+</head>
+<body>
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Skin Assessment Pre-Billing Audit Rules</h1>
+    <div class="page-actions">
+      <a class="btn" id="back" href="index.html"></a>
+      <a class="btn btn--primary" href="create.html">Create rule</a>
+    </div>
+  </div>
+  <section class="panel">
+    <div class="panel__bar">Search</div>
+    <form class="filters" onsubmit="return false">
+      <div class="field"><label class="field-label" for="fStatus">Status</label><select class="select" id="fStatus"><option>All</option><option>Active</option><option>Inactive</option></select></div>
+      <button class="btn btn--primary" id="search" type="button"></button>
+      <button class="btn" id="reset" type="button"></button>
+    </form>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Rule name</th><th>Start date</th><th>End date</th><th>Keywords</th><th>Frequency</th><th>Clinicians</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="shared.js"></script>
+<script>
+  mountChrome();
+  $('back').innerHTML = ICON.back + ' Back';
+  $('search').innerHTML = ICON.search + ' Search';
+  $('reset').innerHTML = ICON.reset + ' Reset';
+  const rules = loadRules();
+
+  function kwCell(r) {
+    if (!r.keywords.length) return '<span class="muted">–</span>';
+    /* Only a "Does not contain" rule gets a label; existing rules read as Contains, as today */
+    const mode = r.kwMode === 'not' ? '<span class="kw__mode">Does not contain</span>' : '';
+    const more = r.keywords.length > 1 ? `<span class="plus plus--k" tabindex="0">+${r.keywords.length - 1}<span class="tip">${r.keywords.slice(1).map(esc).join('<br>')}</span></span>` : '';
+    return `<div class="kw">${mode}<span>${esc(r.keywords[0])}</span>${more}</div>`;
+  }
+  function clinCell(r) {
+    if (!r.clinicians.length) return '<span class="chip">All clinicians</span>';
+    return '<div class="chips">' + r.clinicians.slice(0, 2).map(c => `<span class="chip">${esc(c)}</span>`).join('') + (r.clinicians.length > 2 ? `<span class="chip chip--more">+${r.clinicians.length - 2}</span>` : '') + '</div>';
+  }
+  function draw() {
+    const f = $('fStatus').value;
+    const list = rules.filter(r => f === 'All' || (f === 'Active') === r.on);
+    $('rows').innerHTML = list.map(r => `<tr>
+      <td><label class="toggle"><input type="checkbox" data-id="${r.id}" ${r.on ? 'checked' : ''} aria-label="Active: ${esc(r.name)}"><span></span></label></td>
+      <td>${esc(r.name)}</td><td>${fmtDate(r.start)}</td><td>${fmtDate(r.end)}</td>
+      <td>${kwCell(r)}</td><td>${r.freq ? r.freq + ' days' : '<span class="muted">–</span>'}</td><td>${clinCell(r)}</td></tr>`).join('');
+  }
+  $('rows').addEventListener('change', e => { const r = rules.find(x => x.id == e.target.dataset.id); if (r) { r.on = e.target.checked; saveRules(rules); } });
+  $('search').addEventListener('click', draw);
+  $('reset').addEventListener('click', () => { $('fStatus').value = 'All'; draw(); });
+  draw();
+
+</script>
+</body>
+</html>
